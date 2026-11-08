@@ -450,6 +450,7 @@ function finishTest(){
 /* ═════════════ image rendering ═════════════ */
 const textHTML=s=>esc(s).replace(/\n/g,'<br>');
 const visualHTML=q=>q.visual?('<details class="q-visual" '+(q.s==='math'?'open':'')+'><summary>View original high-resolution equations, graph, or diagram</summary><img src="bank/imported/'+esc(q.visual)+'" alt="Original high-resolution question visual"></details>'):'';
+const rationaleVisualHTML=q=>(q.rationaleVisuals||[]).map((src,i)=>'<img class="rat" src="bank/imported/'+esc(src)+'" alt="Original explanation page '+(i+1)+'">').join('');
 const cropEl=(q,x0,y0,y1,cls='',x1)=>
  `<div class="crop ${cls}" style="width:calc(var(--s)*${(x1||q.w)-x0}px);height:calc(var(--s)*${y1-y0}px);background-image:url(bank/q/${q.id}.webp);background-size:calc(var(--s)*${q.w}px) auto;background-position:calc(var(--s)*${-x0}px) calc(var(--s)*${-y0}px)"></div>`;
 function stemHTML(q,withHl){
@@ -588,7 +589,7 @@ function drawQReview(app){
   app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="rv"><div class="info"><span class="chip ${ok?'g':'b'}">${ok?'Correct':has(ans)?'Incorrect':'Unanswered'}</span>
   <span>${modTitle(it.k)} · Question ${it.i+1}</span><span class="chip">${esc(q.d)}</span><span class="chip">${esc(q.k)}</span><span class="chip">${{E:'Easy',M:'Medium',H:'Hard'}[q.l]}</span></div>
   <div class="qa">${stemHTML(q,false)}<div style="height:18px"></div>${body}</div>
-  <div class="qa"><h4 style="margin-top:0">Explanation</h4>${q.rationaleText?`<div class="text-rationale">${textHTML(q.rationaleText)}</div>`:`<img class="rat" src="bank/r/${q.id}.webp" alt="Explanation">`}</div></div></div>
+  <div class="qa"><h4 style="margin-top:0">Explanation</h4>${q.rationaleText?`<div class="text-rationale">${textHTML(q.rationaleText)}</div>${rationaleVisualHTML(q)}`:`<img class="rat" src="bank/r/${q.id}.webp" alt="Explanation">`}</div></div></div>
   <div class="ribbon"></div>
   <footer class="ftr"><div class="who">Practice Test ${T.n}</div><button class="navpill" data-a="qrback">Back to results</button>
   <div class="fr-r">${p>0?'<button class="btn" data-a="qrprev">Back</button>':''}${p<L.length-1?'<button class="btn" data-a="qrnext">Next</button>':''}</div></footer>`;
