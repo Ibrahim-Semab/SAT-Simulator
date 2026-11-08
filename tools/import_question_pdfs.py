@@ -129,6 +129,14 @@ def main():
             # official key identifies an A-D answer; the full-page visual carries
             # the exact original expressions and diagrams.
             choices_text = [choice_map.get(label, '') for label in 'ABCD'] if is_mcq else []
+            rationale_visuals = []
+            if is_math and not args.no_visuals:
+                for continuation_page in range(page_i + 1, next_page):
+                    if norm(doc[continuation_page].get_text('text')):
+                        rp = visuals / f'{qid}-rationale-{continuation_page + 1}.png'
+                        doc[continuation_page].get_pixmap(matrix=fitz.Matrix(args.scale, args.scale), alpha=False).save(rp)
+                        rationale_visuals.append(f'visuals/{rp.name}')
+
             record = {
                 'id': qid,
                 's': 'rw' if ('reading' in subject.lower() or 'writing' in subject.lower() or 'reading' in Path(pdf_path).name.lower()) else 'math',
@@ -141,6 +149,7 @@ def main():
                 'choicesText': choices_text,
                 'rationaleText': rationale,
                 'visual': visual_path,
+                'rationaleVisuals': rationale_visuals,
                 'source': Path(pdf_path).name,
                 'sourcePage': page_i + 1,
             }
