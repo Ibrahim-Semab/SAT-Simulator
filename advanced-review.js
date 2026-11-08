@@ -35,6 +35,7 @@
     if (!next) activeQuestion = null;
     return result;
   };
+  if (T && T.phase === 'exam' && T.plan && T.plan[T.mod]) { activeQuestion = T.plan[T.mod][T.idx] || null; activeSince = Date.now(); }
   addEventListener('beforeunload', flushTime);
   document.addEventListener('visibilitychange', () => {
     flushTime();
