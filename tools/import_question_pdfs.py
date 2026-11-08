@@ -122,16 +122,23 @@ def main():
                 pix.save(visuals / f'{qid}.png')
                 visual_path = f'visuals/{qid}.png'
 
+            is_mcq = answer.strip().upper() in {'A', 'B', 'C', 'D'}
+            choice_map = {c['label']: c['text'] for c in choices}
+            # Formula glyphs in Math PDFs are vector drawings and may not appear
+            # in the text layer. Keep four interactive answer targets when the
+            # official key identifies an A-D answer; the full-page visual carries
+            # the exact original expressions and diagrams.
+            choices_text = [choice_map.get(label, '') for label in 'ABCD'] if is_mcq else []
             record = {
                 'id': qid,
                 's': 'rw' if ('reading' in subject.lower() or 'writing' in subject.lower() or 'reading' in Path(pdf_path).name.lower()) else 'math',
                 'd': meta.get('domain', ''),
                 'k': meta.get('skill', ''),
                 'l': {'Easy': 'E', 'Medium': 'M', 'Hard': 'H'}.get(meta.get('difficulty', '').strip(), 'M'),
-                'm': 'MCQ' if len(choices) == 4 else 'SPR',
+                'm': 'MCQ' if is_mcq else 'SPR',
                 'a': answer,
                 'text': stem,
-                'choicesText': [c['text'] for c in choices],
+                'choicesText': choices_text,
                 'rationaleText': rationale,
                 'visual': visual_path,
                 'source': Path(pdf_path).name,
