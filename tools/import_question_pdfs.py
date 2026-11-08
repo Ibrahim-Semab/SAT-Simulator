@@ -105,7 +105,7 @@ def main():
             is_math = subject.lower() == 'math' or 'math' in Path(pdf_path).name.lower()
             page = doc[page_i]
             has_images = False if args.no_visuals else bool(page.get_images(full=True))
-            likely_graphic = bool(re.search(r"\\b(graph|chart|table|figure|diagram|shown in|xy-plane|x-y plane)\\b", group_text, re.I))
+            likely_graphic = bool(re.search(r"\b(graph|chart|table|figure|diagram|shown in|xy-plane|x-y plane)\b", group_text, re.I))
             # Math pages always need the vector-art fallback, so avoid the
             # expensive drawing scan there. Scan RW pages only when likely.
             drawings = [] if (args.no_visuals or is_math or (not likely_graphic and not has_images)) else page.get_drawings()
