@@ -1,0 +1,1 @@
+window.IMPORTED_BANK=[];
