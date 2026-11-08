@@ -297,7 +297,6 @@ const ICON={
   flag:'<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4.5L6 21z" stroke-linejoin="round"/></svg>',
   clock:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4.5l3 1.5M9 3h6"/></svg>'
 };
-
 /* ═════════════ history / persistence ═════════════ */
 let H=store.get('sat.hist.v1')||{tests:[],seen:{},n:0};
 let T=store.get('sat.cur.v1')||null;       // test in progress
@@ -516,8 +515,7 @@ function drawExam(app){
     prev();
   }
   // preload neighbours
-  [T.idx+1,T.idx-1].forEach(i=>{const n=BYID[list[i]];if(n){const im=new Image();im.src=`bank/q/${n.id}.webp`}});
-  bindStem();bindDivider();
+  [T.idx+1,T.idx-1].forEach(i=>{const n=BYID[list[i]];if(n){const im=new Image();im.src=`bank/q/${n.id}.webp`}});  bindStem();bindDivider();
   const nw=document.getElementById('noteswin');if(nw){nw.remove();if(UI.hlMode)openNotes()}
 }
 function fracHTML(v){
@@ -736,8 +734,7 @@ function calcEval(src){
     if(F[t]){return F[t](un())}
     const n=Number(t);if(!isFinite(n)||t===undefined)throw Error('x');return n;
   };
-  if(!tk.length)return 0;
-  const v=expr();if(p!==tk.length||!isFinite(v))throw Error('x');return v;
+  if(!tk.length)return 0;  const v=expr();if(p!==tk.length||!isFinite(v))throw Error('x');return v;
 }
 function openCalc(){
   floatWin('calcwin','Calculator',`<div class="calc"><input class="cdisp" id="cd" autocomplete="off" spellcheck="false" placeholder="0"><div class="cres" id="cr"></div><div class="ckeys">${
@@ -846,8 +843,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePops();closeMo
   const live=T;T=null;      // a saved test is resumed from the home screen
   draw();T=null;
   window.__sat={get T(){return T},get H(){return H},BANK,BYID,genModule,planModule,newTest,summarize,isCorrect,saveH,
-    set H(v){H=v},A,live};
-})();
+    set H(v){H=v},A,live};})();
 </script>
+<script src="advanced-review.js"></script>
 </body>
 </html>
