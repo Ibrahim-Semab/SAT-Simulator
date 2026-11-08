@@ -1,1 +1,0 @@
-window.IMPORTED_BANK=[];

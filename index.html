@@ -238,11 +238,6 @@ svg{display:block}
 .rv h4{margin:18px 0 4px;font-size:14px}
 .yours{margin-top:14px;font-size:15px}
 
-.text-stem,.text-rationale{font-size:16px;line-height:1.7;white-space:normal;overflow-wrap:anywhere}
-.text-choice{flex:1;min-width:0;white-space:normal;line-height:1.55;mix-blend-mode:normal}
-.q-visual{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fafbfc}
-.q-visual summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--accent-d)}
-.q-visual img{display:block;width:100%;height:auto;margin-top:12px;border:1px solid var(--line);background:#fff}
 @media (max-width:760px){
   .hdr{padding:0 12px;height:auto;min-height:60px;grid-template-columns:1fr auto;row-gap:2px;padding-top:6px;padding-bottom:6px}
   .hc{grid-row:1;grid-column:2}.hr{grid-column:1/3;grid-row:2;justify-content:flex-start}
@@ -257,7 +252,6 @@ svg{display:block}
 <div id="app"></div>
 <div id="ov"></div>
 <script src="bank/meta.js"></script>
-<script src="bank/imported/questions.js"></script>
 <script>
 "use strict";
 /* ═════════════ constants ═════════════ */
@@ -277,7 +271,7 @@ const DIFF={rw1:{E:9,M:9,H:9},rw2h:{E:2,M:8,H:17},rw2l:{E:15,M:9,H:3},
             m1:{E:7,M:8,H:7},m2h:{E:3,M:7,H:12},m2l:{E:12,M:7,H:3}};
 const THRESH={rw:16,math:13};      // module-1 correct answers needed for the harder module 2
 const BREAK_SECONDS=600;
-const BANK=[...new Map([...(window.BANK||[]),...(window.IMPORTED_BANK||[])].map(q=>[q.id,q])).values()];
+const BANK=window.BANK||[];
 const BYID={};BANK.forEach(q=>BYID[q.id]=q);
 
 /* ═════════════ helpers ═════════════ */
@@ -448,20 +442,16 @@ function finishTest(){
 }
 
 /* ═════════════ image rendering ═════════════ */
-const textHTML=s=>esc(s).replace(/\n/g,'<br>');
-const visualHTML=q=>q.visual?('<details class="q-visual" '+(q.s==='math'?'open':'')+'><summary>View original high-resolution equations, graph, or diagram</summary><img src="bank/imported/'+esc(q.visual)+'" alt="Original high-resolution question visual"></details>'):'';
-const rationaleVisualHTML=q=>(q.rationaleVisuals||[]).map((src,i)=>'<img class="rat" src="bank/imported/'+esc(src)+'" alt="Original explanation page '+(i+1)+'">').join('');
 const cropEl=(q,x0,y0,y1,cls='',x1)=>
  `<div class="crop ${cls}" style="width:calc(var(--s)*${(x1||q.w)-x0}px);height:calc(var(--s)*${y1-y0}px);background-image:url(bank/q/${q.id}.webp);background-size:calc(var(--s)*${q.w}px) auto;background-position:calc(var(--s)*${-x0}px) calc(var(--s)*${-y0}px)"></div>`;
 function stemHTML(q,withHl){
-  if(q.text!==undefined)return '<div class="text-stem">'+textHTML(q.text)+'</div>'+visualHTML(q);
   const r=q.split?q.stem:[0,q.h];
   const boxes=withHl?(T.hl[q.id]||[]).map((b,i)=>`<div class="hlbox" data-i="${i}" style="left:calc(var(--s)*${b[0]}px);top:calc(var(--s)*${b[1]}px);width:calc(var(--s)*${b[2]}px);height:calc(var(--s)*${b[3]}px)"></div>`).join(''):'';
   return `<div class="stem ${UI.hlMode&&withHl?'hl-on':''}" id="stem" data-y0="${r[0]}" style="width:calc(var(--s)*${q.w}px);height:calc(var(--s)*${r[1]-r[0]}px)">${cropEl(q,0,r[0],r[1])}${boxes}</div>`;
 }
-const promptHTML=q=>q.text!==undefined?'':q.split&&q.prompt?`<div class="prompt">${cropEl(q,0,q.prompt[0],q.prompt[1])}</div>`:'';
+const promptHTML=q=>q.split&&q.prompt?`<div class="prompt">${cropEl(q,0,q.prompt[0],q.prompt[1])}</div>`:'';
 function choiceHTML(q,L,i,cls,attrs,extra=''){
-  const body=q.choicesText&&q.choicesText[i]!==undefined?('<div class="ct text-choice">'+textHTML(q.choicesText[i])+'</div>'):q.split&&q.choices?cropEl(q,q.choices[i][2],q.choices[i][0],q.choices[i][1],'ct',q.choices[i][3]):'';
+  const body=q.split&&q.choices?cropEl(q,q.choices[i][2],q.choices[i][0],q.choices[i][1],'ct',q.choices[i][3]):'';
   return `<button class="choice ${cls}${body?'':' plain-choice'}" ${attrs}><span class="letter">${L}</span>${body}${extra}</button>`;
 }
 
@@ -589,7 +579,7 @@ function drawQReview(app){
   app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="rv"><div class="info"><span class="chip ${ok?'g':'b'}">${ok?'Correct':has(ans)?'Incorrect':'Unanswered'}</span>
   <span>${modTitle(it.k)} · Question ${it.i+1}</span><span class="chip">${esc(q.d)}</span><span class="chip">${esc(q.k)}</span><span class="chip">${{E:'Easy',M:'Medium',H:'Hard'}[q.l]}</span></div>
   <div class="qa">${stemHTML(q,false)}<div style="height:18px"></div>${body}</div>
-  <div class="qa"><h4 style="margin-top:0">Explanation</h4>${q.rationaleText?`<div class="text-rationale">${textHTML(q.rationaleText)}</div>${rationaleVisualHTML(q)}`:`<img class="rat" src="bank/r/${q.id}.webp" alt="Explanation">`}</div></div></div>
+  <div class="qa"><h4 style="margin-top:0">Explanation</h4><img class="rat" src="bank/r/${q.id}.webp" alt="Explanation"></div></div></div>
   <div class="ribbon"></div>
   <footer class="ftr"><div class="who">Practice Test ${T.n}</div><button class="navpill" data-a="qrback">Back to results</button>
   <div class="fr-r">${p>0?'<button class="btn" data-a="qrprev">Back</button>':''}${p<L.length-1?'<button class="btn" data-a="qrnext">Next</button>':''}</div></footer>`;
