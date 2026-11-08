@@ -1,0 +1,11 @@
+SAT QUESTION BANK EXTRACTION
+============================
+
+Total questions: 1,748 unique question IDs.
+Math Easy + Medium PDF: 655 questions across 687 pages.
+Math Hard PDF: 340 questions across 350 pages.
+Reading & Writing PDF: 753 questions across 805 pages.
+
+Each question image excludes the answer key and rationale. The paired explanation image begins with the correct answer (where supplied) and includes the full rationale. Questions and explanations that continue onto another source PDF page are joined in reading order.
+Original figures, tables, equations, and answer choices are preserved in the page images.
+The old 147-question image set was replaced; all 1,748 source question IDs are included.
