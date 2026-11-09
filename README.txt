@@ -21,3 +21,12 @@ The included bank contains 1,748 unique SAT questions extracted from the three s
 Question images exclude the answer key and explanation. The matching explanation image includes the correct answer and rationale. Content that continues onto another PDF page is joined in reading order. Figures, graphs, tables, and equations are preserved in the images.
 
 See bank/index.csv for the question inventory and bank/extraction_notes.txt for extraction details.
+
+Text-first question display
+----------------------------
+The simulator supports an optional bank/text.js file. To generate it from the supplied source PDFs:
+
+  python3 -m pip install pymupdf
+  python3 tools/extract_text_bank.py --math "Math All Q&A_compressed(1).pdf" --rw "Reading & Writing All Q&A_compressed(1).pdf" --out bank/text.js
+
+The app uses extracted stems and answer choices when they pass the parser's safety checks. Questions with missing glyphs, visual references, or incomplete choice extraction remain on the original question image. Keep bank/text.js alongside bank/meta.js when deploying. The question difficulty is not displayed in the live test interface; difficulty remains part of the test-generation logic and post-test review metadata.
