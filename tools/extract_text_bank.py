@@ -103,7 +103,7 @@ def parse_record(raw, subject, has_figure):
 def extract(pdf_path, subject):
     doc = fitz.open(pdf_path)
     records = {}
-    current_id, current_pages = None, []
+    current_id, current_pages, current_figure = None, [], False
     page_count = 0
 
     def flush():
@@ -111,7 +111,7 @@ def extract(pdf_path, subject):
             return
         raw = "\n".join(current_pages)
         # Inspect pages grouped with this question for likely embedded figures.
-        data = parse_record(raw, subject, False)
+        data = parse_record(raw, subject, current_figure)
         if data:
             records[current_id] = data
 
@@ -123,8 +123,10 @@ def extract(pdf_path, subject):
             flush()
             current_id = match.group(1).lower()
             current_pages = [raw]
+            current_figure = bool(page.get_images(full=True))
         elif current_id:
             current_pages.append(raw)
+            current_figure = current_figure or bool(page.get_images(full=True))
     flush()
     print(f"{pdf_path}: {len(records)} text-safe questions from {page_count} pages", file=sys.stderr)
     return records
