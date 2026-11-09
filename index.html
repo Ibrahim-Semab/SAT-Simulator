@@ -57,6 +57,9 @@ svg{display:block}
 .pad{padding:26px 28px 40px}
 .crop{background-repeat:no-repeat;max-width:none}
 .stem{position:relative;display:block;user-select:none}
+.text-content{font-size:16px;line-height:1.65;white-space:normal;user-select:text;max-width:100%;overflow-wrap:anywhere}
+.text-content p{margin:0 0 1em}.text-content p:last-child{margin-bottom:0}
+.choice .text-choice{display:block;flex:1;min-width:0;font-size:15px;line-height:1.55;white-space:normal}
 .stem.hl-on{cursor:crosshair}
 .hlbox{position:absolute;background:#ffd84d;mix-blend-mode:multiply;opacity:.75;border-radius:2px}
 .hl-on .hlbox{cursor:pointer}
@@ -443,14 +446,16 @@ function finishTest(){
 /* ═════════════ image rendering ═════════════ */
 const cropEl=(q,x0,y0,y1,cls='',x1)=>
  `<div class="crop ${cls}" style="width:calc(var(--s)*${(x1||q.w)-x0}px);height:calc(var(--s)*${y1-y0}px);background-image:url(bank/q/${q.id}.webp);background-size:calc(var(--s)*${q.w}px) auto;background-position:calc(var(--s)*${-x0}px) calc(var(--s)*${-y0}px)"></div>`;
+const textHTML=value=>'<div class="text-content">'+String(value??'').split(/\\n\\s*\\n/).filter(Boolean).map(p=>'<p>'+esc(p).replace(/\\n/g,' ')+'</p>').join('')+'</div>';
 function stemHTML(q,withHl){
+  if(q.text&&q.text.stem&&!(withHl&&UI.hlMode))return `<div class="stem" id="stem">${textHTML(q.text.stem)}</div>`;
   const r=q.split?q.stem:[0,q.h];
   const boxes=withHl?(T.hl[q.id]||[]).map((b,i)=>`<div class="hlbox" data-i="${i}" style="left:calc(var(--s)*${b[0]}px);top:calc(var(--s)*${b[1]}px);width:calc(var(--s)*${b[2]}px);height:calc(var(--s)*${b[3]}px)"></div>`).join(''):'';
   return `<div class="stem ${UI.hlMode&&withHl?'hl-on':''}" id="stem" data-y0="${r[0]}" style="width:calc(var(--s)*${q.w}px);height:calc(var(--s)*${r[1]-r[0]}px)">${cropEl(q,0,r[0],r[1])}${boxes}</div>`;
 }
-const promptHTML=q=>q.split&&q.prompt?`<div class="prompt">${cropEl(q,0,q.prompt[0],q.prompt[1])}</div>`:'';
+const promptHTML=q=>q.text&&q.text.prompt?`<div class="prompt">${textHTML(q.text.prompt)}</div>`:q.split&&q.prompt?`<div class="prompt">${cropEl(q,0,q.prompt[0],q.prompt[1])}</div>`:'';
 function choiceHTML(q,L,i,cls,attrs,extra=''){
-  const body=q.split&&q.choices?cropEl(q,q.choices[i][2],q.choices[i][0],q.choices[i][1],'ct',q.choices[i][3]):'';
+  const body=q.text&&q.text.choices&&q.text.choices[i]?'<span class="text-choice">'+esc(q.text.choices[i]).replace(/\\n/g,' ')+'</span>':q.split&&q.choices?cropEl(q,q.choices[i][2],q.choices[i][0],q.choices[i][1],'ct',q.choices[i][3]):'';
   return `<button class="choice ${cls}${body?'':' plain-choice'}" ${attrs}><span class="letter">${L}</span>${body}${extra}</button>`;
 }
 
