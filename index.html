@@ -255,6 +255,8 @@ svg{display:block}
 <div id="app"></div>
 <div id="ov"></div>
 <script src="bank/meta.js"></script>
+<script>window.TEXTBANK=window.TEXTBANK||{};</script>
+<script src="bank/text.js"></script>
 <script>
 "use strict";
 /* ═════════════ constants ═════════════ */
@@ -275,7 +277,7 @@ const DIFF={rw1:{E:9,M:9,H:9},rw2h:{E:2,M:8,H:17},rw2l:{E:15,M:9,H:3},
 const THRESH={rw:16,math:13};      // module-1 correct answers needed for the harder module 2
 const BREAK_SECONDS=600;
 const BANK=window.BANK||[];
-const BYID={};BANK.forEach(q=>BYID[q.id]=q);
+const BYID={};BANK.forEach(q=>{BYID[q.id]=q;if(window.TEXTBANK&&window.TEXTBANK[q.id])q.text=window.TEXTBANK[q.id]});
 
 /* ═════════════ helpers ═════════════ */
 const $=s=>document.querySelector(s);
