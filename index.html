@@ -448,7 +448,7 @@ function finishTest(){
 /* ═════════════ image rendering ═════════════ */
 const cropEl=(q,x0,y0,y1,cls='',x1)=>
  `<div class="crop ${cls}" style="width:calc(var(--s)*${(x1||q.w)-x0}px);height:calc(var(--s)*${y1-y0}px);background-image:url(bank/q/${q.id}.webp);background-size:calc(var(--s)*${q.w}px) auto;background-position:calc(var(--s)*${-x0}px) calc(var(--s)*${-y0}px)"></div>`;
-const textHTML=value=>'<div class="text-content">'+String(value??'').split(/\\n\\s*\\n/).filter(Boolean).map(p=>'<p>'+esc(p).replace(/\\n/g,' ')+'</p>').join('')+'</div>';
+const textHTML=value=>'<div class="text-content">'+String(value??'').split(/\n\s*\n/).filter(Boolean).map(p=>'<p>'+esc(p).replace(/\n/g,' ')+'</p>').join('')+'</div>';
 function stemHTML(q,withHl){
   if(q.text&&q.text.stem&&!(withHl&&UI.hlMode))return `<div class="stem" id="stem">${textHTML(q.text.stem)}</div>`;
   const r=q.split?q.stem:[0,q.h];
