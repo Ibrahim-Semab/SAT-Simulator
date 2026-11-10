@@ -339,7 +339,10 @@ function genModule(subject,quota,diff,used){
     }
     if(best){chosen.add(best.id);out.push(best)}
   });
-  out.sort((a,b)=>DOMS[subject].indexOf(a.d)-DOMS[subject].indexOf(b.d)||('EMH'.indexOf(a.l)-'EMH'.indexOf(b.l))+(Math.random()-.5)*1.4);
+  // Reading & Writing stays grouped by domain; Math is ordered Easy → Medium → Hard.
+   out.sort(subject==='rw'
+     ? (a,b)=>DOMS.rw.indexOf(a.d)-DOMS.rw.indexOf(b.d)
+     : (a,b)=>'EMH'.indexOf(a.l)-'EMH'.indexOf(b.l));
   return out.map(q=>q.id);
 }
 const usedIds=()=>new Set(ORDER.flatMap(k=>T.plan[k]||[]));
@@ -527,7 +530,7 @@ const modTitle=k=>`Section ${MODS[k].sec}, Module ${MODS[k].num}: ${MODS[k].name
 function headerHTML(k,tools=true){
   const m=MODS[k];
   const t=m.s==='rw'
-    ?`<button class="tool ${UI.hlMode?'on':''}" data-a="hlmode">${ICON.hl}Highlights &amp; Notes</button>`
+    ?`<button class="tool ${UI.hlMode?'on':''}" data-a="hlmode">${ICON.hl}Highlights</button><button class="tool" data-a="notes">Notes</button>`
     :`<button class="tool" data-a="calc">${ICON.calc}Calculator</button><button class="tool" data-a="ref">${ICON.ref}Reference</button>`;
   return `<header class="hdr"><div class="hl"><div class="ttl">${modTitle(k)}</div><button class="dirbtn" data-a="dir">Directions ${ICON.caretD}</button></div>
   <div class="hc"><div class="tm" id="tm"></div><button class="pill" id="hidebtn" data-a="hidetime">Hide</button></div>
@@ -887,7 +890,8 @@ const A={
   exitnow(){closeModal();save();clearInterval(tickH);T=null;closeAll();draw()},
   mclose(){closeModal()},
   hidetime(){UI.timer=!UI.timer;drawTimer()},
-  hlmode(b){UI.hlMode=!UI.hlMode;b.classList.toggle('on',UI.hlMode);const s=$('#stem');if(s)s.classList.toggle('hl-on',UI.hlMode);if(UI.hlMode)openNotes();else{const n=document.getElementById('noteswin');if(n)n.remove()}},
+  hlmode(b){UI.hlMode=!UI.hlMode;b.classList.toggle('on',UI.hlMode);const s=$('#stem');if(s)s.classList.toggle('hl-on',UI.hlMode)},
+  notes(){openNotes()},
   calc(){openCalc()},ref(){openRef()},ck(b){ckey(b.dataset.v)},
   submit(){
     const l=T.plan[T.mod],un=l.filter(id=>!has(T.ans[id])).length;
