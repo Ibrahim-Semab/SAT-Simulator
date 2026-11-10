@@ -247,6 +247,7 @@ svg{display:block}
 .rv .chip.g{background:var(--good-s);border-color:var(--good);color:var(--good)}
 .rv .chip.b{background:var(--bad-s);border-color:var(--bad);color:var(--bad)}
 .rv .qa{border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:18px}
+.rv .rvq{color:var(--ink)}
 .rv img.rat{max-width:100%;height:auto;display:block;margin-top:6px}
 .rv h4{margin:18px 0 4px;font-size:14px}
 .yours{margin-top:14px;font-size:15px}
@@ -634,7 +635,7 @@ function drawQReview(app){
     }).join('')}</div>`;
   }
   app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="rv"><div class="info"><span class="chip ${ok?'g':'b'}">${ok?'Correct':has(ans)?'Incorrect':'Unanswered'}</span>
-  <span>${modTitle(it.k)} · Question ${it.i+1}</span><span class="chip">${esc(q.d)}</span><span class="chip">${esc(q.k)}</span><span class="chip">${{E:'Easy',M:'Medium',H:'Hard'}[q.l]}</span></div>
+  <b class="rvq">${MODS[it.k].s==='rw'?'R&amp;W':'Math'} ${MODS[it.k].num}.${it.i+1}</b><span>${esc(q.d)}</span><span class="chip">${{E:'Easy',M:'Medium',H:'Hard'}[q.l]}</span></div>
   <div class="qa">${stemHTML(q,false)}<div style="height:18px"></div>${body}</div>
   <div class="qa"><h4 style="margin-top:0">Explanation</h4><img class="rat" src="bank/r/${q.id}.webp" alt="Explanation"></div></div></div>
   <div class="ribbon"></div>
