@@ -21,3 +21,9 @@ The included bank contains 1,748 unique SAT questions extracted from the three s
 Question images exclude the answer key and explanation. The matching explanation image includes the correct answer and rationale. Content that continues onto another PDF page is joined in reading order. Figures, graphs, tables, and equations are preserved in the images.
 
 See bank/index.csv for the question inventory and bank/extraction_notes.txt for extraction details.
+
+
+QUESTION FORMAT (text edition)
+- Passages, prompts and answer choices are real text; equations, graphs and tables are small picture crops from bank/q.
+- Difficulty is shown only on the post-test review screen, never during the exam.
+- tools/text_pipeline rebuilds bank/meta.js from the PDF text extractions.

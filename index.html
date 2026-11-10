@@ -11,7 +11,7 @@
   --accent:#0b7a6e; --accent-d:#085e55; --accent-s:#e3f4f1;
   --flag:#c2410c; --good:#1b7f4c; --good-s:#e4f5ec; --bad:#b42318; --bad-s:#fdeceb;
   --r1:#0b7a6e; --r2:#e4572e; --r3:#f2b134;       /* ribbon colours */
-  --s:1; /* image scale, set by script */
+  --fs:16; /* body text size in px (More > Text size) */
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Noto Sans",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
@@ -55,12 +55,24 @@ svg{display:block}
 .main.stack .divider{display:none}
 .main.stack .pane.left{border-bottom:2px solid var(--line)}
 .pad{padding:26px 28px 40px}
-.crop{background-repeat:no-repeat;max-width:none}
-.stem{position:relative;display:block;user-select:none}
-.stem.hl-on{cursor:crosshair}
+/* question content: real text, with equations / figures kept as small picture crops */
+.crop{display:block;position:relative;overflow:hidden;max-width:100%;width:calc(var(--cw)*var(--fs)/14*1px);aspect-ratio:var(--cw)/var(--ch)}
+.crop img,.ic img{position:absolute;max-width:none;height:auto;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.ic{display:inline-block;position:relative;overflow:hidden;vertical-align:middle;max-width:100%;width:calc(var(--cw)*var(--fs)/14*1px);aspect-ratio:var(--cw)/var(--ch);margin:0 1px}
+.stem{position:relative;display:block;font-size:calc(var(--fs)*1px);line-height:1.65;user-select:none;max-width:820px}
+.stem.hl-on{cursor:text;user-select:text}
+.stem p{margin:0 0 .85em;white-space:pre-line}
+.stem p.eq{text-align:center;margin:.35em 0 .9em}
+.stem p.h{font-weight:700;margin-top:1.1em}
+.stem ul{margin:.2em 0 .9em;padding-left:1.4em}.stem li{margin:.3em 0;white-space:pre-line}
+.stem>.crop{margin:0 0 1em}
+.stem u{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.stem mark{background:#ffd84d;color:inherit;border-radius:2px;padding:0}
+.hl-on mark{cursor:pointer}.hl-on mark:hover{outline:2px solid var(--flag)}
 .hlbox{position:absolute;background:#ffd84d;mix-blend-mode:multiply;opacity:.75;border-radius:2px}
 .hl-on .hlbox{cursor:pointer}
 .hl-on .hlbox:hover{outline:2px solid var(--flag)}
+.hl-on .crop[data-hk]{cursor:crosshair}
 .hlnew{position:absolute;background:#ffd84d;opacity:.5;pointer-events:none}
 
 /* question bar */
@@ -78,14 +90,16 @@ svg{display:block}
 .main.side .pane.right{overflow:hidden}
 
 /* choices */
-.prompt{margin-bottom:22px}
+.prompt{margin-bottom:22px;font-size:calc(var(--fs)*1px);line-height:1.6}
 .choices{display:flex;flex-direction:column;gap:12px}
 .choice{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:1.5px solid var(--ink);border-radius:10px;padding:10px 14px;background:var(--bg);position:relative;transition:border-color .1s,background .1s}
 .choice:hover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .letter{flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font-weight:700;font-size:14px}
 .choice.sel{border-color:var(--accent);background:var(--accent-s);box-shadow:0 0 0 1px var(--accent)}
 .choice.sel .letter{background:var(--accent);border-color:var(--accent);color:#fff}
-.choice .ct{position:relative;flex:none;mix-blend-mode:multiply}
+.choice .ct{position:relative;min-width:0;font-size:calc(var(--fs)*1px);line-height:1.5;text-align:left}
+.choice .ct.txt{display:inline-block;flex:0 1 auto;white-space:pre-line}
+.choice .ic.ct{flex:none;mix-blend-mode:multiply}
 .choice.out{border-style:dashed;border-color:#8b96a3;box-shadow:none}
 .choice.out .ct{opacity:.38}
 .choice.out .ct::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:var(--ink)}
@@ -101,7 +115,6 @@ svg{display:block}
 .choice.static{cursor:default}.choice.static:hover{box-shadow:none;border-color:var(--ink)}
 .choice.static.fb-good:hover{border-color:var(--good);box-shadow:0 0 0 1px var(--good)}
 .choice.static.fb-bad:hover{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad)}
-.plain-choice .ct{display:none}
 .tag{margin-left:auto;font-size:12px;font-weight:700;border-radius:12px;padding:2px 10px;background:var(--ink);color:#fff}
 
 /* student-produced response */
@@ -300,7 +313,7 @@ const ICON={
 /* ═════════════ history / persistence ═════════════ */
 let H=store.get('sat.hist.v1')||{tests:[],seen:{},n:0};
 let T=store.get('sat.cur.v1')||null;       // test in progress
-let UI={timer:true,elim:false,hlMode:false,layout:store.get('sat.layout')||'auto',view:null};
+let UI={timer:true,elim:false,hlMode:false,layout:store.get('sat.layout')||'auto',fs:store.get('sat.fs')||16,view:null};
 const saveH=()=>store.set('sat.hist.v1',H);
 function save(){if(T&&T.phase!=='results')store.set('sat.cur.v1',T)}
 function clearCur(){T=null;store.del('sat.cur.v1')}
@@ -440,19 +453,61 @@ function finishTest(){
   const done=T;clearCur();T=done;UI.view=null;draw();
 }
 
-/* ═════════════ image rendering ═════════════ */
-const cropEl=(q,x0,y0,y1,cls='',x1)=>
- `<div class="crop ${cls}" style="width:calc(var(--s)*${(x1||q.w)-x0}px);height:calc(var(--s)*${y1-y0}px);background-image:url(bank/q/${q.id}.webp);background-size:calc(var(--s)*${q.w}px) auto;background-position:calc(var(--s)*${-x0}px) calc(var(--s)*${-y0}px)"></div>`;
+/* ═════════════ question rendering ═════════════
+   Text is real text. Only equations, graphs and tables stay as small picture crops cut from
+   bank/q/<id>.webp. A crop is [y0,y1,x0,x1]. Inside text, [[y0,y1,x0,x1]] marks an inline crop. */
+const CX0=18;
+const MK=/\[\[(\d+),(\d+),(\d+),(\d+)\]\]/g;
+const cropAttr=(q,x0,y0,x1,y1)=>{const cw=x1-x0,ch=y1-y0;
+  return {st:`--cw:${cw};--ch:${ch}`,img:`<img src="bank/q/${q.id}.webp" alt="" draggable="false" style="width:${(q.w/cw*100).toFixed(3)}%;left:${(-x0/cw*100).toFixed(3)}%;top:${(-y0/ch*100).toFixed(3)}%">`}};
+function inlineCrop(q,r,cls=''){const c=cropAttr(q,r[2],r[0],r[3],r[1]);return `<span class="ic ${cls}" style="${c.st}">${c.img}</span>`}
+function blockCrop(q,rows,key,hl){          // full-width crop of the given rows
+  const x1=q.w-14,c=cropAttr(q,CX0,rows[0],x1,rows[1]);
+  const boxes=(hl||[]).map((b,i)=>b.length===5&&b[0]===key?`<div class="hlbox" data-i="${i}" style="left:${b[1]*100}%;top:${b[2]*100}%;width:${b[3]*100}%;height:${b[4]*100}%"></div>`:'').join('');
+  return `<div class="crop" ${key?`data-hk="${key}"`:''} style="${c.st}">${c.img}${boxes}</div>`;
+}
+const rich=(q,t)=>esc(t).replace(MK,(m,a,b,c,d)=>inlineCrop(q,[+a,+b,+c,+d]));
+const eqOnly=t=>/^\s*(\[\[\d+,\d+,\d+,\d+\]\]\s*)+$/.test(t);
+function markText(raw,hl,ul){            // hl: [start,end,index] highlights · ul: [start,end] underlines
+  const cuts=new Set([0,raw.length]);
+  hl.forEach(r=>{cuts.add(r[0]);cuts.add(r[1])});ul.forEach(r=>{cuts.add(r[0]);cuts.add(r[1])});
+  const pts=[...cuts].filter(x=>x>=0&&x<=raw.length).sort((x,y)=>x-y);let out='';
+  for(let i=0;i<pts.length-1;i++){
+    const s0=pts[i],e0=pts[i+1];let t=esc(raw.slice(s0,e0));
+    if(ul.some(r=>r[0]<=s0&&r[1]>=e0))t=`<u>${t}</u>`;
+    const h=hl.find(r=>r[0]<=s0&&r[1]>=e0);if(h)t=`<mark data-i="${h[2]}">${t}</mark>`;
+    out+=t;
+  }
+  return out;
+}
+function parasHTML(q,P,hl){
+  let out='',ul=false;
+  P.forEach((p,pi)=>{
+    const bullet=p.startsWith('• '),head=p.startsWith('# '),raw=bullet||head?p.slice(2):p;
+    if(bullet&&!ul){out+='<ul>';ul=true}
+    if(!bullet&&ul){out+='</ul>';ul=false}
+    const rg=hl.map((b,i)=>b.length===3&&b[0]===pi?[b[1],b[2],i]:null).filter(Boolean);
+    const ur=(q.U||[]).filter(u=>u[0]===pi).map(u=>[u[1],u[2]]);
+    const body=rg.length||ur.length?markText(raw,rg,ur):rich(q,raw);
+    out+=bullet?`<li data-p="${pi}">${body}</li>`:head?`<p class="h" data-p="${pi}">${body}</p>`:`<p data-p="${pi}"${eqOnly(raw)?' class="eq"':''}>${body}</p>`;
+  });
+  return out+(ul?'</ul>':'');
+}
 function stemHTML(q,withHl){
-  const r=q.split?q.stem:[0,q.h];
-  const boxes=withHl?(T.hl[q.id]||[]).map((b,i)=>`<div class="hlbox" data-i="${i}" style="left:calc(var(--s)*${b[0]}px);top:calc(var(--s)*${b[1]}px);width:calc(var(--s)*${b[2]}px);height:calc(var(--s)*${b[3]}px)"></div>`).join(''):'';
-  return `<div class="stem ${UI.hlMode&&withHl?'hl-on':''}" id="stem" data-y0="${r[0]}" style="width:calc(var(--s)*${q.w}px);height:calc(var(--s)*${r[1]-r[0]}px)">${cropEl(q,0,r[0],r[1])}${boxes}</div>`;
+  const hl=withHl?(T.hl[q.id]||[]):[];
+  let h='';
+  if(q.fg)h+=blockCrop(q,q.fg);
+  if(q.si)h+=blockCrop(q,q.si,'si',hl);
+  if(q.P)h+=parasHTML(q,q.P,hl);
+  return `<div class="stem ${UI.hlMode&&withHl?'hl-on':''}" id="stem">${h}</div>`;
 }
-const promptHTML=q=>q.split&&q.prompt?`<div class="prompt">${cropEl(q,0,q.prompt[0],q.prompt[1])}</div>`:'';
+const promptHTML=q=>q.PR?`<div class="prompt">${rich(q,q.PR)}</div>`:'';
 function choiceHTML(q,L,i,cls,attrs,extra=''){
-  const body=q.split&&q.choices?cropEl(q,q.choices[i][2],q.choices[i][0],q.choices[i][1],'ct',q.choices[i][3]):'';
-  return `<button class="choice ${cls}${body?'':' plain-choice'}" ${attrs}><span class="letter">${L}</span>${body}${extra}</button>`;
+  const o=q.o&&q.o[i];
+  const body=typeof o==='string'?`<span class="ct txt">${rich(q,o)}</span>`:Array.isArray(o)?inlineCrop(q,o,'ct'):'';
+  return `<button class="choice ${cls}" ${attrs}><span class="letter">${L}</span>${body}${extra}</button>`;
 }
+const usesImg=q=>!!(q.si||q.fg||(q.o&&q.o.some(Array.isArray))||(q.P&&q.P.some(p=>p.includes('[[')))||(q.PR&&q.PR.includes('[['))||(q.o&&q.o.some(o=>typeof o==='string'&&o.includes('[['))));
 
 /* ═════════════ screens ═════════════ */
 function draw(){
@@ -515,7 +570,8 @@ function drawExam(app){
     prev();
   }
   // preload neighbours
-  [T.idx+1,T.idx-1].forEach(i=>{const n=BYID[list[i]];if(n){const im=new Image();im.src=`bank/q/${n.id}.webp`}});  bindStem();bindDivider();
+  [T.idx+1,T.idx-1].forEach(i=>{const n=BYID[list[i]];if(n&&usesImg(n)){const im=new Image();im.src=`bank/q/${n.id}.webp`}});
+  bindStem();bindDivider();
   const nw=document.getElementById('noteswin');if(nw){nw.remove();if(UI.hlMode)openNotes()}
 }
 function fracHTML(v){
@@ -601,20 +657,13 @@ function drawHome(app){
 
 /* ═════════════ layout / scale ═════════════ */
 function layout(){
-  const main=$('#main'),pl=$('#pl'),pr=$('#pr');
-  const mode=UI.layout==='auto'?(innerWidth>=1700?'side':'stack'):UI.layout;
-  let s;
+  const main=$('#main'),pl=$('#pl');
+  const mode=UI.layout==='auto'?(innerWidth>=1000?'side':'stack'):UI.layout;
   if(main){
     main.classList.toggle('side',mode==='side');main.classList.toggle('stack',mode!=='side');
-    if(mode==='side'){
-      if(UI.split)pl.style.flexBasis=UI.split+'px';else pl.style.flexBasis='50%';
-      const lw=pl.getBoundingClientRect().width,rw=main.getBoundingClientRect().width-lw-12;
-      s=Math.min((lw-56)/853,(rw-126)/832);
-    }else{pl.style.flexBasis='';s=Math.min((main.clientWidth-126)/832,1.2)}
-  }else{
-    const w=Math.min(innerWidth,1100);s=(w-200)/832;
+    pl.style.flexBasis=mode==='side'?(UI.split?UI.split+'px':'50%'):'';
   }
-  document.documentElement.style.setProperty('--s',clamp(s,.55,1.3).toFixed(3));
+  document.documentElement.style.setProperty('--fs',UI.fs);
 }
 addEventListener('resize',()=>{layout()});
 function bindDivider(){
@@ -627,35 +676,57 @@ function bindDivider(){
   });
 }
 
-/* ═════════════ highlighter (drag a box over the passage) ═════════════ */
+/* ═════════════ highlighter ═════════════
+   Text passages: select text with the mouse. Stored as [paragraph, start, end].
+   Picture passages (rare): drag a box. Stored as [key, x, y, w, h] in fractions of the picture. */
 function redrawStem(){const q=BYID[T.plan[T.mod][T.idx]];$('#stem').outerHTML=stemHTML(q,true);bindStem()}
+function offsetIn(p,node,off){const r=document.createRange();r.selectNodeContents(p);r.setEnd(node,off);return r.toString().length}
+function addRange(arr,pi,s0,e0){
+  for(let i=arr.length-1;i>=0;i--){const b=arr[i];if(b.length===3&&b[0]===pi&&b[1]<=e0&&b[2]>=s0){s0=Math.min(s0,b[1]);e0=Math.max(e0,b[2]);arr.splice(i,1)}}
+  arr.push([pi,s0,e0]);
+}
 function bindStem(){
   const st=$('#stem');if(!st||MODS[T.mod].s!=='rw')return;
   const id=T.plan[T.mod][T.idx];
-  let start=null,tmp=null;
-  const sc=()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s'))||1;
   st.addEventListener('click',e=>{
     if(!UI.hlMode)return;
-    const b=e.target.closest('.hlbox');
-    if(b){T.hl[id].splice(+b.dataset.i,1);save();redrawStem()}
+    const m=e.target.closest('mark,.hlbox');
+    if(m){(T.hl[id]||[]).splice(+m.dataset.i,1);save();redrawStem()}
   });
-  st.addEventListener('pointerdown',e=>{
-    if(!UI.hlMode||e.target.closest('.hlbox'))return;
-    const r=st.getBoundingClientRect();start={x:e.clientX-r.left,y:e.clientY-r.top};
-    tmp=document.createElement('div');tmp.className='hlnew';st.appendChild(tmp);st.setPointerCapture(e.pointerId);
+  st.addEventListener('mouseup',()=>{
+    if(!UI.hlMode)return;
+    const sel=getSelection();if(!sel||sel.isCollapsed||!sel.rangeCount)return;
+    const range=sel.getRangeAt(0),found=[];
+    st.querySelectorAll('[data-p]').forEach(p=>{
+      if(!range.intersectsNode(p))return;
+      const whole=document.createRange();whole.selectNodeContents(p);
+      const s0=range.compareBoundaryPoints(Range.START_TO_START,whole)<0?0:offsetIn(p,range.startContainer,range.startOffset);
+      const e0=range.compareBoundaryPoints(Range.END_TO_END,whole)>0?p.textContent.length:offsetIn(p,range.endContainer,range.endOffset);
+      if(e0>s0)found.push([+p.dataset.p,s0,e0]);
+    });
+    sel.removeAllRanges();
+    if(!found.length)return;
+    const arr=T.hl[id]=T.hl[id]||[];
+    found.forEach(f=>addRange(arr,...f));
+    save();redrawStem();
   });
-  st.addEventListener('pointermove',e=>{
-    if(!start)return;
-    const r=st.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
-    Object.assign(tmp.style,{left:Math.min(start.x,x)+'px',top:Math.min(start.y,y)+'px',width:Math.abs(x-start.x)+'px',height:Math.abs(y-start.y)+'px'});
-  });
-  st.addEventListener('pointerup',e=>{
-    if(!start)return;
-    const r=st.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,s=sc();
-    const w=Math.abs(x-start.x),h=Math.abs(y-start.y);
-    const box=[Math.min(start.x,x)/s,Math.min(start.y,y)/s,w/s,h/s];
-    tmp.remove();tmp=null;start=null;
-    if(w>6&&h>4){(T.hl[id]=T.hl[id]||[]).push(box.map(v=>Math.round(v)));save();redrawStem()}
+  st.querySelectorAll('.crop[data-hk]').forEach(c=>{
+    let start=null,tmp=null;
+    c.addEventListener('pointerdown',e=>{
+      if(!UI.hlMode||e.target.closest('.hlbox'))return;
+      const r=c.getBoundingClientRect();start={x:e.clientX-r.left,y:e.clientY-r.top};
+      tmp=document.createElement('div');tmp.className='hlnew';c.appendChild(tmp);c.setPointerCapture(e.pointerId);
+    });
+    c.addEventListener('pointermove',e=>{
+      if(!start)return;const r=c.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+      Object.assign(tmp.style,{left:Math.min(start.x,x)+'px',top:Math.min(start.y,y)+'px',width:Math.abs(x-start.x)+'px',height:Math.abs(y-start.y)+'px'});
+    });
+    c.addEventListener('pointerup',e=>{
+      if(!start)return;const r=c.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+      const w=Math.abs(x-start.x),h=Math.abs(y-start.y),sx=Math.min(start.x,x),sy=Math.min(start.y,y);
+      tmp.remove();tmp=null;start=null;
+      if(w>6&&h>4){(T.hl[id]=T.hl[id]||[]).push([c.dataset.hk,sx/r.width,sy/r.height,w/r.width,h/r.height]);save();redrawStem()}
+    });
   });
 }
 
@@ -682,6 +753,8 @@ function toggleMore(){
   <button class="opt ${L==='auto'?'on':''}" data-a="layout" data-v="auto">Automatic</button>
   <button class="opt ${L==='side'?'on':''}" data-a="layout" data-v="side">Side by side</button>
   <button class="opt ${L==='stack'?'on':''}" data-a="layout" data-v="stack">Stacked</button>
+  <div class="sub">Text size</div>
+  ${[['Small',15],['Medium',16],['Large',19]].map(([n,v])=>`<button class="opt ${+UI.fs===v?'on':''}" data-a="fsize" data-v="${v}">${n}</button>`).join('')}
   <div class="sub">Test</div><button data-a="exit">Save &amp; exit</button></div>`,'more');
 }
 function modal(title,text,acts){
@@ -770,7 +843,7 @@ function openRef(){
 }
 function openNotes(){
   const id=T.plan[T.mod][T.idx];
-  const w=floatWin('noteswin','Notes',`<textarea id="nt" placeholder="Notes for this question"></textarea><p class="hint">Drag across the passage to highlight it. Click a highlight to remove it.</p>`,'notes');
+  const w=floatWin('noteswin','Notes',`<textarea id="nt" placeholder="Notes for this question"></textarea><p class="hint">Select text in the passage to highlight it. Click a highlight to remove it.</p>`,'notes');
   if(!w)return;
   const nt=$('#nt');nt.value=T.notes[id]||'';
   nt.addEventListener('input',()=>{T.notes[id]=nt.value;save()});
@@ -808,6 +881,7 @@ const A={
   closefloat(b){const e=document.getElementById(b.dataset.id);if(e)e.remove()},
   dir(){toggleDir()},
   more(){toggleMore()},
+  fsize(b){UI.fs=+b.dataset.v;store.set('sat.fs',UI.fs);closePops();layout()},
   layout(b){UI.layout=b.dataset.v;UI.split=null;store.set('sat.layout',UI.layout);closePops();layout()},
   exit(){closePops();modal('Save and exit?','Your progress is saved. You can resume this test from the home screen.','<button class="btn ghost" data-a="mclose">Cancel</button><button class="btn" data-a="exitnow">Save &amp; exit</button>')},
   exitnow(){closeModal();save();clearInterval(tickH);T=null;closeAll();draw()},
