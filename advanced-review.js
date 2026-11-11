@@ -47,20 +47,68 @@
     return oldHeader.apply(this, arguments).replace('Calculator</button>', 'Desmos</button>');
   };
 
+  const DESMOS_MIN = { w: 380, h: 320 };
+  function clampDesmos(w) {
+    const maxW = innerWidth - 16, maxH = innerHeight - 16;
+    const wd = Math.min(Math.max(w.offsetWidth, Math.min(DESMOS_MIN.w, maxW)), maxW);
+    const ht = Math.min(Math.max(w.offsetHeight, Math.min(DESMOS_MIN.h, maxH)), maxH);
+    w.style.width = wd + 'px'; w.style.height = ht + 'px';
+    const r = w.getBoundingClientRect();
+    w.style.left = Math.min(Math.max(8, r.left), Math.max(8, innerWidth - wd - 8)) + 'px';
+    w.style.top = Math.min(Math.max(8, r.top), Math.max(8, innerHeight - ht - 8)) + 'px';
+    w.style.right = 'auto';
+  }
+  function addResizeHandles(w) {
+    ['n', 'e', 's', 'w', 'ne', 'nw', 'se', 'sw'].forEach(dir => {
+      const h = document.createElement('div');
+      h.className = 'rz rz-' + dir; h.dataset.dir = dir;
+      h.addEventListener('pointerdown', e => {
+        e.preventDefault(); e.stopPropagation();
+        const r = w.getBoundingClientRect(), sx = e.clientX, sy = e.clientY;
+        w.style.left = r.left + 'px'; w.style.top = r.top + 'px'; w.style.right = 'auto';
+        w.classList.add('resizing'); h.setPointerCapture(e.pointerId);
+        const mv = ev => {
+          const dx = ev.clientX - sx, dy = ev.clientY - sy;
+          let L = r.left, T = r.top, W = r.width, H = r.height;
+          if (dir.includes('e')) W = r.width + dx;
+          if (dir.includes('s')) H = r.height + dy;
+          if (dir.includes('w')) { W = r.width - dx; L = r.left + dx; }
+          if (dir.includes('n')) { H = r.height - dy; T = r.top + dy; }
+          const minW = Math.min(DESMOS_MIN.w, innerWidth - 16), minH = Math.min(DESMOS_MIN.h, innerHeight - 16);
+          const maxW = innerWidth - 16, maxH = innerHeight - 16;
+          const W2 = Math.min(Math.max(W, minW), maxW), H2 = Math.min(Math.max(H, minH), maxH);
+          if (dir.includes('w')) L = r.left + r.width - W2;
+          if (dir.includes('n')) T = r.top + r.height - H2;
+          L = Math.min(Math.max(8, L), innerWidth - W2 - 8); T = Math.min(Math.max(8, T), innerHeight - H2 - 8);
+          Object.assign(w.style, { width: W2 + 'px', height: H2 + 'px', left: L + 'px', top: T + 'px' });
+        };
+        const up = () => {
+          h.removeEventListener('pointermove', mv); h.removeEventListener('pointerup', up);
+          h.removeEventListener('pointercancel', up); w.classList.remove('resizing');
+          try { localStorage.setItem('sat.desmos', JSON.stringify({ w: w.offsetWidth, h: w.offsetHeight })); } catch (_) {}
+        };
+        h.addEventListener('pointermove', mv); h.addEventListener('pointerup', up); h.addEventListener('pointercancel', up);
+      });
+      w.appendChild(h);
+    });
+  }
   function openDesmos() {
     const url = 'https://www.desmos.com/testing/collegeboard/graphing';
     const w = floatWin('desmoswin', 'Desmos Graphing Calculator',
       '<div class="desmos-frame"><iframe title="College Board Desmos Graphing Calculator" src="' + url +
-      '" allow="fullscreen"></iframe><p><a href="' + url +
-      '" target="_blank" rel="noopener noreferrer">Open Desmos in a new tab</a></p></div>', 'desmos');
-    if (w) {
-      const frame = w.querySelector('iframe');
-      if (frame) frame.addEventListener('error', () => {
-        const p = w.querySelector('p');
-        if (p) p.textContent = 'If the calculator does not load here, use the link below.';
-      });
-    }
+      '" allow="fullscreen"></iframe></div>', 'desmos');
+    if (!w) return;
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem('sat.desmos') || 'null'); } catch (_) {}
+    if (saved && saved.w && saved.h) { w.style.width = saved.w + 'px'; w.style.height = saved.h + 'px'; }
+    const tb = w.querySelector('.tb'), x = tb.querySelector('.x');
+    tb.querySelector('span').classList.add('desmos-title');
+    x.insertAdjacentHTML('beforebegin', '<a class="desmos-ext" href="' + url +
+      '" target="_blank" rel="noopener noreferrer" title="Open Desmos in a new tab" aria-label="Open Desmos in a new tab">↗</a>');
+    addResizeHandles(w);
+    requestAnimationFrame(() => clampDesmos(w));
   }
+  addEventListener('resize', () => { const w = document.getElementById('desmoswin'); if (w) clampDesmos(w); });
   A.calc = openDesmos;
 
   const modulesFor = subject => ORDER.filter(k => MODS[k].s === subject && T.plan[k]);
@@ -224,10 +272,21 @@
 
   const style = document.createElement('style');
   style.textContent = `
-    .desmos{width:min(900px,calc(100vw - 24px));height:min(720px,calc(100vh - 110px));right:12px;top:70px;display:flex;flex-direction:column}
-    .desmos-frame{display:flex;flex:1;min-height:0;flex-direction:column;padding:10px;gap:8px}
-    .desmos-frame iframe{width:100%;flex:1;min-height:280px;border:1px solid var(--line);border-radius:8px}
-    .desmos-frame p{margin:0;font-size:13px}.desmos-frame a{color:var(--accent-d);font-weight:700}
+    .desmos{width:min(640px,calc(100vw - 16px));height:min(520px,calc(100vh - 80px));right:12px;top:72px;display:flex;flex-direction:column;overflow:visible;border-radius:10px}
+    .desmos .tb{padding:3px 4px 3px 12px;font-size:12.5px;border-radius:10px 10px 0 0;flex:none;gap:8px}
+    .desmos .tb .x{width:26px;height:26px;font-size:18px;line-height:1}
+    .desmos-title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .desmos-ext{font-size:15px;font-weight:700;color:var(--accent-d);text-decoration:none;padding:0 6px}
+    .desmos-ext:hover{background:var(--bg);border-radius:6px}
+    .desmos-frame{display:flex;flex:1;min-height:0;padding:0}
+    .desmos-frame iframe{width:100%;height:100%;flex:1;border:0;border-radius:0 0 10px 10px;display:block}
+    .desmos.resizing .desmos-frame iframe{pointer-events:none}
+    .rz{position:absolute;z-index:2;touch-action:none}
+    .rz-n,.rz-s{left:10px;right:10px;height:8px}.rz-e,.rz-w{top:10px;bottom:10px;width:8px}
+    .rz-n{top:-4px;cursor:ns-resize}.rz-s{bottom:-4px;cursor:ns-resize}.rz-e{right:-4px;cursor:ew-resize}.rz-w{left:-4px;cursor:ew-resize}
+    .rz-ne,.rz-nw,.rz-se,.rz-sw{width:16px;height:16px}
+    .rz-ne{top:-5px;right:-5px;cursor:nesw-resize}.rz-sw{bottom:-5px;left:-5px;cursor:nesw-resize}
+    .rz-nw{top:-5px;left:-5px;cursor:nwse-resize}.rz-se{bottom:-5px;right:-5px;cursor:nwse-resize}
     .adv-res{max-width:980px}.adv-res h1{margin-bottom:16px}
     .adv-res h2{font-size:15px;margin:0 0 14px}
     .adv-hero{display:flex;align-items:center;gap:28px;border:1px solid var(--line);border-radius:16px;padding:22px 28px}
