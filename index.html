@@ -219,7 +219,8 @@ svg{display:block}
 .hrow .sc{margin-left:auto;text-align:right;font-variant-numeric:tabular-nums}
 .hrow .sc b{font-size:20px;display:block;line-height:1.1}
 .link{color:var(--accent-d);font-weight:700;font-size:13px;text-decoration:underline;text-underline-offset:3px}
-.tiny{margin-top:34px;text-align:center;font-size:12px;color:var(--ink2)}
+.tiny{margin-top:40px;text-align:center;font-size:12px;color:var(--ink2)}
+.disc{margin:14px auto 0;max-width:440px;font-size:11.5px;line-height:1.5;color:var(--ink2)}
 .resume{background:var(--accent-s);border:1px solid var(--accent);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;font-size:14px}
 .resume b{display:block;font-size:15px}.resume .btn{margin-left:auto;padding:8px 22px}
 
@@ -280,7 +281,20 @@ const DOMS={
   rw:['Craft and Structure','Information and Ideas','Standard English Conventions','Expression of Ideas'],
   math:['Algebra','Advanced Math','Problem-Solving and Data Analysis','Geometry and Trigonometry']
 };
-const QUOTA={rw1:[7,7,7,6],rw2:[7,7,7,6],m1:[8,7,4,3],m2:[7,8,3,4]};
+/* Reading & Writing follows the official blueprint: domains in the official order, each module holding
+   Craft and Structure ~28%, Information and Ideas ~26%, Standard English Conventions ~26%, Expression of Ideas ~20%
+   across the two modules (15/14/14/11 of 54), and each domain's questions grouped by skill in the official order.
+   RW quota = questions per skill, per domain, in the order of SKILLS.rw. */
+const SKILLS={rw:[
+  ['Words in Context','Text Structure and Purpose','Cross-Text Connections'],
+  ['Central Ideas and Details','Command of Evidence','Inferences'],
+  ['Boundaries','Form, Structure, and Sense'],
+  ['Rhetorical Synthesis','Transitions']]};
+const QUOTA={
+  rw1:[[4,3,1],[2,3,2],[4,3],[3,2]],      // 8 · 7 · 7 · 5
+  rw2:[[3,3,1],[2,3,2],[3,4],[3,3]],      // 7 · 7 · 7 · 6
+  m1:[8,7,4,3],m2:[7,8,3,4]};
+const skKey=x=>String(x||'').toLowerCase().replace(/[^a-z]/g,'');
 const DIFF={rw1:{E:9,M:9,H:9},rw2h:{E:2,M:8,H:17},rw2l:{E:15,M:9,H:3},
             m1:{E:7,M:8,H:7},m2h:{E:3,M:7,H:12},m2l:{E:12,M:7,H:3}};
 const THRESH={rw:16,math:13};      // module-1 correct answers needed for the harder module 2
@@ -307,6 +321,7 @@ const ICON={
   hl:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M14.5 4.5l5 5L9 20H4v-5z"/><path d="M12 7l5 5"/></svg>',
   calc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h.01M15.5 18h.01" stroke-linecap="round" stroke-width="2.2"/></svg>',
   ref:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5.5C6.5 4 9.5 4 12 5.5c2.5-1.5 5.5-1.5 8 0V19c-2.5-1.5-5.5-1.5-8 0-2.5-1.5-5.5-1.5-8 0z"/><path d="M12 5.5V19"/></svg>',
+  notes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 3.5h14v17H5z"/><path d="M8.5 8.5h7M8.5 12h7M8.5 15.5h4"/></svg>',
   more:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
   flag:'<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4.5L6 21z" stroke-linejoin="round"/></svg>',
   clock:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4.5l3 1.5M9 3h6"/></svg>'
@@ -327,23 +342,29 @@ const seenN=id=>H.seen[id]||0;
 function genModule(subject,quota,diff,used){
   const labels=[];['E','M','H'].forEach(k=>{for(let i=0;i<(diff[k]||0);i++)labels.push(k)});
   shuffle(labels);
-  const slots=[];DOMS[subject].forEach((d,di)=>{for(let i=0;i<quota[di];i++)slots.push(d)});
+  const slots=[];DOMS[subject].forEach((d,di)=>{
+    const qd=quota[di];
+    if(Array.isArray(qd))qd.forEach((n,si)=>{for(let i=0;i<n;i++)slots.push({d,k:SKILLS[subject][di][si]})});
+    else for(let i=0;i<qd;i++)slots.push({d,k:null});
+  });
   const pool=BANK.filter(q=>q.s===subject&&!used.has(q.id));
   const chosen=new Set(),out=[];
-  slots.forEach((dom,i)=>{
+  slots.forEach((slot,i)=>{
+    const dom=slot.d,sk=slot.k&&skKey(slot.k);
     const want='EMH'.indexOf(labels[i%labels.length]);
     let best=null,bs=1e9;
     for(const q of pool){
       if(chosen.has(q.id))continue;
-      const sc=seenN(q.id)*100+(q.d===dom?0:40)+Math.abs('EMH'.indexOf(q.l)-want)*12+Math.random()*6;
+      const sc=seenN(q.id)*100+(sk?(skKey(q.k)===sk?0:q.d===dom?1000:3000):(q.d===dom?0:40))+Math.abs('EMH'.indexOf(q.l)-want)*12+Math.random()*6;
       if(sc<bs){bs=sc;best=q}
     }
     if(best){chosen.add(best.id);out.push(best)}
   });
-  // Reading & Writing stays grouped by domain; Math is ordered Easy → Medium → Hard.
-   out.sort(subject==='rw'
-     ? (a,b)=>DOMS.rw.indexOf(a.d)-DOMS.rw.indexOf(b.d)
-     : (a,b)=>'EMH'.indexOf(a.l)-'EMH'.indexOf(b.l));
+  // Reading & Writing is ordered by domain, then by skill, as on the official test; Math is ordered Easy → Medium → Hard.
+  const rwPos=q=>{const di=DOMS.rw.indexOf(q.d),si=SKILLS.rw[di]?SKILLS.rw[di].findIndex(x=>skKey(x)===skKey(q.k)):-1;return di*10+(si<0?9:si)};
+  out.sort(subject==='rw'
+    ? (a,b)=>rwPos(a)-rwPos(b)
+    : (a,b)=>'EMH'.indexOf(a.l)-'EMH'.indexOf(b.l));
   return out.map(q=>q.id);
 }
 const usedIds=()=>new Set(ORDER.flatMap(k=>T.plan[k]||[]));
@@ -531,7 +552,7 @@ const modTitle=k=>`Section ${MODS[k].sec}, Module ${MODS[k].num}: ${MODS[k].name
 function headerHTML(k,tools=true){
   const m=MODS[k];
   const t=m.s==='rw'
-    ?`<button class="tool ${UI.hlMode?'on':''}" data-a="hlmode">${ICON.hl}Highlights</button><button class="tool" data-a="notes">Notes</button>`
+    ?`<button class="tool ${UI.hlMode?'on':''}" data-a="hlmode">${ICON.hl}Highlights</button><button class="tool" data-a="notes">${ICON.notes}Notes</button>`
     :`<button class="tool" data-a="calc">${ICON.calc}Calculator</button><button class="tool" data-a="ref">${ICON.ref}Reference</button>`;
   return `<header class="hdr"><div class="hl"><div class="ttl">${modTitle(k)}</div><button class="dirbtn" data-a="dir">Directions ${ICON.caretD}</button></div>
   <div class="hc"><div class="tm" id="tm"></div><button class="pill" id="hidebtn" data-a="hidetime">Hide</button></div>
@@ -656,7 +677,7 @@ function drawHome(app){
   <div class="startrow"><button class="btn big" data-a="start">Start Practice Test ${(H.n||0)+(cur?1:1)}</button></div>
   <div class="cover"><i style="width:${BANK.length?Math.round(100*seen/BANK.length):0}%"></i></div><div class="covt">${seen} of ${BANK.length} questions seen</div>
   ${rows?`<div class="hist">${rows}</div>`:''}
-  <div class="tiny">${H.tests.length?'<button class="link" data-a="reset">Reset history</button>':''}</div></div></div><div class="ribbon"></div>`;
+  <div class="tiny">${(H.tests.length||cur||seen)?'<button class="link" data-a="reset">Reset history</button>':''}<p class="disc">Practice material based on College Board content. Independent study tool; not an official College Board product.</p></div></div></div><div class="ribbon"></div>`;
 }
 
 /* ═════════════ layout / scale ═════════════ */

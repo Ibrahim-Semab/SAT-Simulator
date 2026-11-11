@@ -6,6 +6,9 @@ Keep the "bank" folder next to it.
 * Each new test is generated from the bank. Questions you have not seen come first;
   once everything has been seen, the least-repeated ones come back.
   History, in-progress tests and results are stored in the browser (localStorage).
+* Reading and Writing follows the official blueprint: 27 questions per module, ordered by domain then skill
+  (Craft and Structure, Information and Ideas, Standard English Conventions, Expression of Ideas), with
+  ~28/26/26/20% across the two modules. Skill counts per module are set in QUOTA at the top of index.html.
 * Module 2 is chosen from your Module 1 result (16+ of 27 in Reading and Writing,
   13+ of 22 in Math -> harder module).
 * To add questions: build a bigger bank folder with tools/build_bank.py
