@@ -42,16 +42,6 @@
     activeSince = Date.now();
   });
 
-  const oldHome = drawHome;
-  drawHome = function (app) {
-    oldHome.apply(this, arguments);
-    const sub = app.querySelector('.home .sub');
-    if (sub && !app.querySelector('.cb-note')) {
-      sub.insertAdjacentHTML('afterend',
-        '<p class="cb-note">Practice material based on College Board content. Independent study tool; not an official College Board product.</p>');
-    }
-  };
-
   const oldHeader = headerHTML;
   headerHTML = function () {
     return oldHeader.apply(this, arguments).replace('Calculator</button>', 'Desmos</button>');
@@ -84,6 +74,21 @@
   function filteredRows() {
     const rows = allRows();
     return (UI.advFilter || 'review') === 'all' ? rows : rows.filter(r => !r.correct);
+  }
+  const SIZES = [10, 20, 50];
+  function pageList(cur, n) {
+    const set = new Set([1, n, cur - 1, cur, cur + 1].filter(p => p >= 1 && p <= n));
+    const out = []; let prev = 0;
+    [...set].sort((a, b) => a - b).forEach(p => { if (p - prev > 1) out.push('…'); out.push(p); prev = p; });
+    return out;
+  }
+  function pager(total, size, page) {
+    const n = Math.max(1, Math.ceil(total / size));
+    const btn = (label, p, on, off, aria) => '<button class="adv-page ' + (on ? 'on' : '') + '" ' + (off ? 'disabled ' : '') +
+      'data-a="advPage" data-v="' + p + '"' + (aria ? ' aria-label="' + aria + '"' : '') + '>' + label + '</button>';
+    return '<div class="adv-pager">' + btn('‹', page - 1, false, page <= 1, 'Previous page') +
+      pageList(page, n).map(p => p === '…' ? '<span class="adv-gap">…</span>' : btn(p, p, p === page, false, 'Page ' + p)).join('') +
+      btn('›', page + 1, false, page >= n, 'Next page') + '</div>';
   }
   function domainStats(rows) {
     const map = new Map();
@@ -145,6 +150,9 @@
     const S = T.sum || summarize(T), rows = allRows(), shown = filteredRows();
     const right = rows.filter(r => r.correct).length, wrong = rows.length - right;
     const filter = UI.advFilter || 'review';
+    const size = UI.advSize || 10, pages = Math.max(1, Math.ceil(shown.length / size));
+    const page = Math.min(Math.max(1, UI.advPage || 1), pages); UI.advPage = page;
+    const slice = shown.slice((page - 1) * size, page * size);
     app.innerHTML = '<div class="ribbon"></div><div class="center"><div class="res adv-res">' +
       '<h1>Practice Test ' + T.n + '</h1>' +
       '<section class="adv-hero">' + ringSVG(S.total, 400, 1600, 'Estimated total ' + S.total + ' out of 1600') +
@@ -155,12 +163,16 @@
       '<section class="adv-card"><div class="adv-list-head"><h2>Review</h2><div class="adv-controls">' +
       '<button class="adv-filter ' + (filter === 'review' ? 'on' : '') + '" data-a="advFilter" data-v="review">To review (' + wrong + ')</button>' +
       '<button class="adv-filter ' + (filter === 'all' ? 'on' : '') + '" data-a="advFilter" data-v="all">All (' + rows.length + ')</button></div></div>' +
-      (shown.length ? '<div class="adv-question-list">' + shown.map(r =>
+      (shown.length ? '<div class="adv-question-list">' + slice.map(r =>
         '<button class="adv-question" data-a="advOpen" data-k="' + r.k + '" data-i="' + r.i + '">' +
         '<span class="adv-dot ' + r.status + '"></span><span class="adv-qnum">' + (MODS[r.k].s === 'rw' ? 'R&amp;W ' : 'Math ') +
         MODS[r.k].num + '.' + (r.i + 1) + '</span><span class="adv-qmain">' + esc(r.q.d) + '</span><span class="adv-lvl ' +
         r.q.l + '" title="' + (LEVEL[r.q.l] || '') + '">' + (LEVEL[r.q.l] || '').charAt(0) + '</span><span class="adv-qtime">' +
-        (r.seconds ? fmt(r.seconds) : '') + '</span></button>').join('') + '</div>' :
+        (r.seconds ? fmt(r.seconds) : '') + '</span></button>').join('') + '</div>' +
+        '<div class="adv-foot"><div class="adv-size"><span>Show</span>' + SIZES.map(n =>
+          '<button class="adv-filter ' + (n === size ? 'on' : '') + '" data-a="advSize" data-v="' + n + '">' + n + '</button>').join('') +
+        '</div><span class="adv-range-txt">' + ((page - 1) * size + 1) + '–' + Math.min(page * size, shown.length) + ' of ' + shown.length +
+        '</span>' + (pages > 1 ? pager(shown.length, size, page) : '') + '</div>' :
         '<p class="adv-empty">Nothing to review. Perfect score!</p>') + '</section>' +
       '<div class="resacts"><button class="btn" data-a="home">Done</button><button class="btn ghost" data-a="again">Start another test</button></div>' +
       '</div></div><div class="ribbon"></div>';
@@ -168,7 +180,9 @@
   }
 
   drawResults = drawAdvancedResults;
-  A.advFilter = b => { UI.advFilter = b.dataset.v; drawResults($('#app')); };
+  A.advFilter = b => { UI.advFilter = b.dataset.v; UI.advPage = 1; drawResults($('#app')); };
+  A.advSize = b => { UI.advSize = Number(b.dataset.v); UI.advPage = 1; drawResults($('#app')); };
+  A.advPage = b => { UI.advPage = Number(b.dataset.v); drawResults($('#app')); const l = $('.adv-question-list'); if (l) l.scrollIntoView({block:'start'}); };
     A.advOpen = b => {
     UI.view = { k:b.dataset.k, i:Number(b.dataset.i) };
     draw();
@@ -176,15 +190,14 @@
   };
   // Keep review state predictable when opening another test.
   const oldOpen = A.open;
-  A.open = function (b) { UI.advFilter='review'; return oldOpen(b); };
+  A.open = function (b) { UI.advFilter='review'; UI.advPage=1; return oldOpen(b); };
   const oldAgain = A.again;
-  A.again = function (b) { UI.advFilter='review'; return oldAgain(b); };
+  A.again = function (b) { UI.advFilter='review'; UI.advPage=1; return oldAgain(b); };
   const oldStart = A.start;
-  A.start = function (b) { UI.advFilter='review'; return oldStart(b); };
+  A.start = function (b) { UI.advFilter='review'; UI.advPage=1; return oldStart(b); };
 
   const style = document.createElement('style');
   style.textContent = `
-    .cb-note{margin:10px 0 0;padding:9px 12px;border-left:3px solid var(--accent);background:var(--accent-s);color:var(--ink2);font-size:12px;line-height:1.45}
     .desmos{width:min(900px,calc(100vw - 24px));height:min(720px,calc(100vh - 110px));right:12px;top:70px;display:flex;flex-direction:column}
     .desmos-frame{display:flex;flex:1;min-height:0;flex-direction:column;padding:10px;gap:8px}
     .desmos-frame iframe{width:100%;flex:1;min-height:280px;border:1px solid var(--line);border-radius:8px}
@@ -240,6 +253,14 @@
     .adv-lvl{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff}
     .adv-lvl.E{background:var(--good)}.adv-lvl.M{background:#b7791f}.adv-lvl.H{background:var(--bad)}
     .adv-qtime{flex:none;min-width:48px;text-align:right;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+    .adv-foot{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between;border-top:1px solid var(--line);padding-top:14px;margin-top:4px}
+    .adv-size{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2)}.adv-size span{margin-right:2px}
+    .adv-range-txt{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+    .adv-pager{display:flex;gap:4px;align-items:center}
+    .adv-page{min-width:32px;height:32px;padding:0 8px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-weight:700}
+    .adv-page:hover:not(:disabled):not(.on){background:var(--bar)}
+    .adv-page.on{background:var(--accent);border-color:var(--accent);color:#fff}
+    .adv-page:disabled{opacity:.35;cursor:default}.adv-gap{color:var(--ink2);padding:0 2px}
     .adv-empty{margin:18px 0 6px;font-size:14px;color:var(--ink2)}
     @media(max-width:760px){.adv-hero{flex-direction:column;align-items:flex-start;gap:16px;padding:18px}.adv-cols{grid-template-columns:1fr}.adv-card{padding:16px}}
   `;
