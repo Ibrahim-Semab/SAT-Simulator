@@ -281,7 +281,20 @@ const DOMS={
   rw:['Craft and Structure','Information and Ideas','Standard English Conventions','Expression of Ideas'],
   math:['Algebra','Advanced Math','Problem-Solving and Data Analysis','Geometry and Trigonometry']
 };
-const QUOTA={rw1:[7,7,7,6],rw2:[7,7,7,6],m1:[8,7,4,3],m2:[7,8,3,4]};
+/* Reading & Writing follows the official blueprint: domains in the official order, each module holding
+   Craft and Structure ~28%, Information and Ideas ~26%, Standard English Conventions ~26%, Expression of Ideas ~20%
+   across the two modules (15/14/14/11 of 54), and each domain's questions grouped by skill in the official order.
+   RW quota = questions per skill, per domain, in the order of SKILLS.rw. */
+const SKILLS={rw:[
+  ['Words in Context','Text Structure and Purpose','Cross-Text Connections'],
+  ['Central Ideas and Details','Command of Evidence','Inferences'],
+  ['Boundaries','Form, Structure, and Sense'],
+  ['Rhetorical Synthesis','Transitions']]};
+const QUOTA={
+  rw1:[[4,3,1],[2,3,2],[4,3],[3,2]],      // 8 · 7 · 7 · 5
+  rw2:[[3,3,1],[2,3,2],[3,4],[3,3]],      // 7 · 7 · 7 · 6
+  m1:[8,7,4,3],m2:[7,8,3,4]};
+const skKey=x=>String(x||'').toLowerCase().replace(/[^a-z]/g,'');
 const DIFF={rw1:{E:9,M:9,H:9},rw2h:{E:2,M:8,H:17},rw2l:{E:15,M:9,H:3},
             m1:{E:7,M:8,H:7},m2h:{E:3,M:7,H:12},m2l:{E:12,M:7,H:3}};
 const THRESH={rw:16,math:13};      // module-1 correct answers needed for the harder module 2
@@ -329,23 +342,29 @@ const seenN=id=>H.seen[id]||0;
 function genModule(subject,quota,diff,used){
   const labels=[];['E','M','H'].forEach(k=>{for(let i=0;i<(diff[k]||0);i++)labels.push(k)});
   shuffle(labels);
-  const slots=[];DOMS[subject].forEach((d,di)=>{for(let i=0;i<quota[di];i++)slots.push(d)});
+  const slots=[];DOMS[subject].forEach((d,di)=>{
+    const qd=quota[di];
+    if(Array.isArray(qd))qd.forEach((n,si)=>{for(let i=0;i<n;i++)slots.push({d,k:SKILLS[subject][di][si]})});
+    else for(let i=0;i<qd;i++)slots.push({d,k:null});
+  });
   const pool=BANK.filter(q=>q.s===subject&&!used.has(q.id));
   const chosen=new Set(),out=[];
-  slots.forEach((dom,i)=>{
+  slots.forEach((slot,i)=>{
+    const dom=slot.d,sk=slot.k&&skKey(slot.k);
     const want='EMH'.indexOf(labels[i%labels.length]);
     let best=null,bs=1e9;
     for(const q of pool){
       if(chosen.has(q.id))continue;
-      const sc=seenN(q.id)*100+(q.d===dom?0:40)+Math.abs('EMH'.indexOf(q.l)-want)*12+Math.random()*6;
+      const sc=seenN(q.id)*100+(sk?(skKey(q.k)===sk?0:q.d===dom?1000:3000):(q.d===dom?0:40))+Math.abs('EMH'.indexOf(q.l)-want)*12+Math.random()*6;
       if(sc<bs){bs=sc;best=q}
     }
     if(best){chosen.add(best.id);out.push(best)}
   });
-  // Reading & Writing stays grouped by domain; Math is ordered Easy → Medium → Hard.
-   out.sort(subject==='rw'
-     ? (a,b)=>DOMS.rw.indexOf(a.d)-DOMS.rw.indexOf(b.d)
-     : (a,b)=>'EMH'.indexOf(a.l)-'EMH'.indexOf(b.l));
+  // Reading & Writing is ordered by domain, then by skill, as on the official test; Math is ordered Easy → Medium → Hard.
+  const rwPos=q=>{const di=DOMS.rw.indexOf(q.d),si=SKILLS.rw[di]?SKILLS.rw[di].findIndex(x=>skKey(x)===skKey(q.k)):-1;return di*10+(si<0?9:si)};
+  out.sort(subject==='rw'
+    ? (a,b)=>rwPos(a)-rwPos(b)
+    : (a,b)=>'EMH'.indexOf(a.l)-'EMH'.indexOf(b.l));
   return out.map(q=>q.id);
 }
 const usedIds=()=>new Set(ORDER.flatMap(k=>T.plan[k]||[]));
