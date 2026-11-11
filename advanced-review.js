@@ -146,6 +146,30 @@
       '<div class="adv-sub">Modules</div>' + modulesFor(subject).map(moduleStrip).join('') +
       '<div class="adv-sub">Topics · weakest first</div>' + topicBars(rows) + '</section>';
   }
+  // Pace: which skills eat more time than the official per-question budget.
+  function timeCard(subject, name) {
+    const rows = allRows().filter(r => MODS[r.k].s === subject && r.seconds > 0);
+    if (!rows.length) return '';
+    const mods = modulesFor(subject);
+    const target = mods.reduce((n, k) => n + MODS[k].min * 60, 0) / mods.reduce((n, k) => n + T.plan[k].length, 0);
+    const map = new Map();
+    rows.forEach(r => {
+      const key = r.q.k || r.q.d || 'Other';
+      const e = map.get(key) || { name: key, n: 0, sec: 0 };
+      e.n++; e.sec += r.seconds; map.set(key, e);
+    });
+    const list = [...map.values()].map(e => ({ ...e, avg: e.sec / e.n })).sort((a, b) => b.avg - a.avg).slice(0, 5);
+    const overall = rows.reduce((n, r) => n + r.seconds, 0) / rows.length;
+    const scale = Math.max(target * 1.25, ...list.map(e => e.avg)) * 1.05, tp = 100 * target / scale;
+    return '<section class="adv-card"><div class="adv-time-head"><h2>' + name + '</h2><span class="adv-time-avg ' +
+      (overall > target * 1.15 ? 'slow' : 'ok') + '"><b>' + fmt(overall) + '</b> avg</span></div>' +
+      '<div class="adv-time-list">' + list.map(e => {
+        const slow = e.avg > target * 1.15;
+        return '<div class="adv-trow"><div class="adv-trow-head"><span>' + esc(e.name) + '</span><b class="' + (slow ? 'slow' : '') + '">' +
+          fmt(e.avg) + '</b></div><div class="adv-ttrack"><i class="' + (slow ? 'slow' : 'ok') + '" style="width:' + (100 * e.avg / scale).toFixed(1) +
+          '%"></i><u style="left:' + tp.toFixed(1) + '%"></u></div></div>';
+      }).join('') + '</div><p class="adv-tlegend"><u></u>Target pace ' + fmt(target) + ' per question</p></section>';
+  }
   function drawAdvancedResults(app) {
     const S = T.sum || summarize(T), rows = allRows(), shown = filteredRows();
     const right = rows.filter(r => r.correct).length, wrong = rows.length - right;
@@ -160,6 +184,8 @@
       '<div class="adv-hero-stats"><span><b class="g">' + right + '</b> correct</span><span><b class="r">' + wrong +
       '</b> to review</span></div><p class="adv-fine">Unofficial estimate</p></div></section>' +
       '<div class="adv-cols">' + sectionCard('rw', 'Reading &amp; Writing', S.rw) + sectionCard('math', 'Math', S.math) + '</div>' +
+      ((t1, t2) => (t1 || t2) ? '<h2 class="adv-sect">Time · slowest question types</h2><div class="adv-cols">' + t1 + t2 + '</div>' : '')(
+        timeCard('rw', 'Reading &amp; Writing'), timeCard('math', 'Math')) +
       '<section class="adv-card"><div class="adv-list-head"><h2>Review</h2><div class="adv-controls">' +
       '<button class="adv-filter ' + (filter === 'review' ? 'on' : '') + '" data-a="advFilter" data-v="review">To review (' + wrong + ')</button>' +
       '<button class="adv-filter ' + (filter === 'all' ? 'on' : '') + '" data-a="advFilter" data-v="all">All (' + rows.length + ')</button></div></div>' +
@@ -233,6 +259,18 @@
     .adv-strip{display:flex;flex-wrap:wrap;gap:5px}
     .adv-strip .cell{width:27px;height:27px;font-size:11px;border-radius:5px}
     .adv-strip .cell:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(15,23,34,.25)}
+    .adv-sect{font-size:13px;margin:22px 2px 0;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px}
+    .adv-time-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}.adv-time-head h2{margin:0}
+    .adv-time-avg{font-size:12px;color:var(--ink2)}.adv-time-avg b{font-size:22px;font-weight:800;margin-right:3px;font-variant-numeric:tabular-nums}
+    .adv-time-avg.slow b,.adv-trow b.slow{color:var(--bad)}
+    .adv-trow{margin-bottom:12px}.adv-trow-head{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+    .adv-trow-head b{font-variant-numeric:tabular-nums;color:var(--ink2)}
+    .adv-ttrack{position:relative;height:10px;background:var(--bar);border-radius:8px;margin-top:5px}
+    .adv-ttrack i{position:absolute;left:0;top:0;bottom:0;border-radius:8px;min-width:3px}
+    .adv-ttrack i.ok{background:var(--accent)}.adv-ttrack i.slow{background:var(--bad)}
+    .adv-ttrack u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);text-decoration:none;border-radius:1px}
+    .adv-tlegend{display:flex;align-items:center;gap:7px;margin:14px 0 0;font-size:11.5px;color:var(--ink2)}
+    .adv-tlegend u{display:inline-block;width:2px;height:12px;background:var(--ink)}
     .adv-topic{margin-bottom:12px}
     .adv-topic-head{display:flex;justify-content:space-between;gap:10px;font-size:13px}
     .adv-topic-head b{font-variant-numeric:tabular-nums;color:var(--ink2)}
