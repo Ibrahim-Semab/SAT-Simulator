@@ -1,0 +1,51 @@
+[
+ {
+  "id": "75a32330",
+  "reason": "screenshot is cut off: answer choice D (a graph) is missing from the source image",
+  "entry": {
+   "w": 853,
+   "h": 2010,
+   "id": "75a32330",
+   "s": "math",
+   "a": "A",
+   "d": "Advanced Math",
+   "k": "Nonlinear equations in one variable and systems of equations in two variables",
+   "l": "M",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 461,
+   "ep": 463,
+   "P": [
+    "[[222,244,384,469]]",
+    "[[257,277,387,465]]",
+    "Which graph represents the given system of equations?"
+   ],
+   "o": [
+    [
+     717,
+     1144,
+     267,
+     604
+    ],
+    [
+     1153,
+     1540,
+     267,
+     604
+    ],
+    [
+     1549,
+     1974,
+     267,
+     604
+    ],
+    [
+     1983,
+     2000,
+     41,
+     43
+    ]
+   ]
+  }
+ }
+]

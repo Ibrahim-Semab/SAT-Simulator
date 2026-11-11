@@ -30,3 +30,9 @@ QUESTION FORMAT (text edition)
 - Passages, prompts and answer choices are real text; equations, graphs and tables are small picture crops from bank/q.
 - Difficulty is shown only on the post-test review screen, never during the exam.
 - tools/text_pipeline rebuilds bank/meta.js from the PDF text extractions.
+
+Question quality check
+* python3 tools/audit_bank.py [--list] checks every picture crop in bank/meta.js against its screenshot in
+  bank/q (tiny, out of bounds, blank, answer start cut off, answer end cut off) and exits 1 if anything is wrong.
+  Run it after regenerating the bank.
+* bank/excluded.json holds questions kept out of tests because their source screenshot is itself incomplete.

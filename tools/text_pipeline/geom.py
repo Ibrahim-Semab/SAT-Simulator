@@ -12,7 +12,8 @@ def label_end_x(g,band):
     for x in xs[1:]:
         if x-prev>=5:break
         prev=x
-    return int(prev)
+    # 'A.'-'D.' always end by x=35; a short answer ("B. 0") sits <5px after the label and would be swallowed
+    return min(int(prev),35)
 def geometry(qid,mode):
     r,g,B=analyse(qid);H,W=g.shape
     sb=r['stem_bands']
