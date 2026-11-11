@@ -82,93 +82,86 @@
     }));
   }
   function filteredRows() {
-    const filter = UI.advFilter || 'all', section = UI.advSection || 'all';
-    return allRows().filter(r =>
-      (filter === 'all' || r.status === filter) &&
-      (section === 'all' || (section === 'rw' ? MODS[r.k].s === 'rw' : MODS[r.k].s === 'math')));
+    const rows = allRows();
+    return (UI.advFilter || 'review') === 'all' ? rows : rows.filter(r => !r.correct);
   }
   function domainStats(rows) {
     const map = new Map();
     rows.forEach(r => {
-      const key = r.q.d || 'Uncategorized';
-      if (!map.has(key)) map.set(key, {name:key,total:0,correct:0,seconds:0,levels:{E:{n:0,c:0},M:{n:0,c:0},H:{n:0,c:0}}});
-      const d = map.get(key), level = d.levels[r.q.l] || d.levels.M;
-      d.total++; d.correct += r.correct ? 1 : 0; d.seconds += r.seconds;
-      level.n++; level.c += r.correct ? 1 : 0;
+      const key = r.q.d || 'Other';
+      if (!map.has(key)) map.set(key, { name: key, total: 0, correct: 0 });
+      const d = map.get(key);
+      d.total++; d.correct += r.correct ? 1 : 0;
     });
-    return [...map.values()].sort((a,b) => a.name.localeCompare(b.name));
+    return [...map.values()].sort((a, b) => (a.correct / a.total) - (b.correct / b.total) || a.name.localeCompare(b.name));
   }
-  function pct(n,d) { return d ? Math.round(100*n/d) + '%' : '—'; }
-  function levelReached(d) {
-    return ['H','M','E'].find(l => d.levels[l].c > 0) || '—';
+  const tone = p => p >= 75 ? 'good' : p >= 50 ? 'mid' : 'bad';
+  const LEVEL = { E: 'Easy', M: 'Medium', H: 'Hard' };
+
+  function ringSVG(value, min, max, label) {
+    const r = 52, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, (value - min) / (max - min)));
+    return '<div class="adv-ring"><svg viewBox="0 0 128 128" role="img" aria-label="' + label + '">' +
+      '<circle cx="64" cy="64" r="' + r + '" fill="none" stroke="var(--bar)" stroke-width="12"/>' +
+      '<circle cx="64" cy="64" r="' + r + '" fill="none" stroke="var(--accent)" stroke-width="12" stroke-linecap="round" ' +
+      'stroke-dasharray="' + (c * f).toFixed(1) + ' ' + c.toFixed(1) + '" transform="rotate(-90 64 64)"/></svg>' +
+      '<div class="adv-ring-v"><b>' + value + '</b><span>/ 1600</span></div></div>';
+  }
+  function rangeBar(est) {
+    const left = Math.max(0, Math.min(100, (est - 200) / 6));
+    return '<div class="adv-range"><i style="width:' + left + '%"></i><em style="left:' + left + '%"></em></div>' +
+      '<div class="adv-range-ends"><span>200</span><span>800</span></div>';
+  }
+  function scoreRow(name, sec) {
+    return '<div class="adv-score"><div class="adv-score-head"><span>' + name + '</span><b>' + sec.est +
+      '</b></div>' + rangeBar(sec.est) + '</div>';
+  }
+  function moduleStrip(k) {
+    const list = T.plan[k];
+    if (!list) return '';
+    const c = list.filter(id => isCorrect(BYID[id], T.ans[id])).length;
+    const hard = k === 'rw2' ? T.route.rw : k === 'm2' ? T.route.math : null;
+    const tag = hard ? '<small class="adv-tag">' + (hard === 'h' ? 'Harder' : 'Easier') + '</small>' : '';
+    return '<div class="adv-mod"><div class="adv-mod-head"><span>Module ' + MODS[k].num + tag + '</span><b>' + c + '/' +
+      list.length + '</b></div><div class="adv-strip">' + list.map((id, i) => {
+        const ok = isCorrect(BYID[id], T.ans[id]);
+        return '<button class="cell ' + (ok ? 'rg' : has(T.ans[id]) ? 'rb2' : 'ru') + '" data-a="qrev" data-k="' + k +
+          '" data-i="' + i + '" aria-label="Review question ' + (i + 1) + '">' + (i + 1) + '</button>';
+      }).join('') + '</div></div>';
+  }
+  function topicBars(rows) {
+    return domainStats(rows).map(d => {
+      const p = Math.round(100 * d.correct / d.total);
+      return '<div class="adv-topic"><div class="adv-topic-head"><span>' + esc(d.name) + '</span><b>' + d.correct + '/' +
+        d.total + '</b></div><div class="adv-track"><i class="' + tone(p) + '" style="width:' + p + '%"></i></div></div>';
+    }).join('');
+  }
+  function sectionCard(subject, name, sec) {
+    const rows = allRows().filter(r => MODS[r.k].s === subject);
+    return '<section class="adv-card"><h2>' + name + '</h2>' + scoreRow('Score', sec) +
+      '<div class="adv-sub">Modules</div>' + modulesFor(subject).map(moduleStrip).join('') +
+      '<div class="adv-sub">Topics · weakest first</div>' + topicBars(rows) + '</section>';
   }
   function drawAdvancedResults(app) {
     const S = T.sum || summarize(T), rows = allRows(), shown = filteredRows();
-    const totalTime = rows.reduce((n,r) => n+r.seconds, 0);
-    const timed = rows.filter(r => r.seconds > 0);
-    const slowest = [...domainStats(rows)].sort((a,b) =>
-      (b.total ? b.seconds/b.total : 0) - (a.total ? a.seconds/a.total : 0)).slice(0,4);
-    const filters = [['all','All'],['missed','Missed'],['incorrect','Incorrect']];
-    const sections = [['all','All sections'],['rw','Reading & Writing'],['math','Math']];
-    const domainPanel = subject => {
-      const list = rows.filter(r => MODS[r.k].s === subject);
-      const stats = domainStats(list);
-      return '<section class="adv-panel"><h2>' + (subject === 'rw' ? 'Reading &amp; Writing' : 'Math') +
-        ' · Domain insights</h2>' + (stats.length ? stats.map(d =>
-        '<div class="adv-domain"><div class="adv-domain-head"><b>' + esc(d.name) + '</b><strong>' +
-        pct(d.correct,d.total) + '</strong></div><div class="adv-track"><i style="width:' +
-        (d.total ? 100*d.correct/d.total : 0) + '%"></i></div><div class="adv-meta">' +
-        d.correct + '/' + d.total + ' correct · Avg. ' + fmt(d.total ? d.seconds/d.total : 0) +
-        ' · Highest difficulty answered correctly: <b>' + ({E:'Easy',M:'Medium',H:'Hard'}[levelReached(d)] || 'Not yet reached') +
-        '</b></div><div class="adv-levels">' + ['E','M','H'].map(l =>
-          '<span>' + ({E:'Easy',M:'Medium',H:'Hard'}[l]) + ': ' +
-          pct(d.levels[l].c,d.levels[l].n) + '</span>').join('') + '</div></div>').join('') :
-        '<p class="adv-muted">No questions in this section.</p>') + '</section>';
-    };
-    const modulePanel = k => {
-      const list = rows.filter(r => r.k === k);
-      if (!list.length) return '';
-      const c = list.filter(r => r.correct).length;
-      return '<div class="adv-module"><b>' + esc(modTitle(k)) + '</b><span>' + c + '/' + list.length +
-        ' correct · ' + fmt(list.reduce((n,r)=>n+r.seconds,0)) + ' spent</span></div>';
-    };
+    const right = rows.filter(r => r.correct).length, wrong = rows.length - right;
+    const filter = UI.advFilter || 'review';
     app.innerHTML = '<div class="ribbon"></div><div class="center"><div class="res adv-res">' +
-      '<h1>Practice Test ' + T.n + ' · Advanced Review</h1>' +
-      '<div class="scores"><div class="sbox tot"><div class="l">Estimated total</div><div class="v">' + S.total +
-      '</div><div class="d">out of 1600 · unofficial estimate</div></div>' +
-      '<div class="sbox"><div class="l">Reading and Writing</div><div class="v">' + S.rw.est +
-      '</div><div class="d">' + S.rw.correct + ' / ' + S.rw.total + ' correct</div></div>' +
-      '<div class="sbox"><div class="l">Math</div><div class="v">' + S.math.est +
-      '</div><div class="d">' + S.math.correct + ' / ' + S.math.total + ' correct</div></div></div>' +
-      '<div class="adv-kpis"><div><b>' + rows.filter(r=>r.correct).length + '/' + rows.length +
-      '</b><span>Accuracy</span></div><div><b>' + fmt(totalTime) + '</b><span>Tracked question time</span></div>' +
-      '<div><b>' + (timed.length ? fmt(totalTime/timed.length) : '—') +
-      '</b><span>Average per question</span></div><div><b>' + rows.filter(r=>r.status==='missed').length +
-      '</b><span>Unanswered</span></div></div>' +
-      '<p class="note">Question time is tracked while a question is open in the simulator. Time from before this feature was enabled is not available. Score estimates are not official College Board scores.</p>' +
-      '<section class="adv-panel"><h2>Module breakdown</h2>' + ORDER.map(modulePanel).join('') + '</section>' +
-      domainPanel('rw') + domainPanel('math') +
-      '<section class="adv-panel"><h2>Where time is going</h2>' +
-      (slowest.length ? '<p class="adv-muted">Domains with the highest average time per question:</p>' +
-        slowest.map(d=>'<div class="adv-time-row"><span>' + esc(d.name) + '</span><b>' +
-          fmt(d.total ? d.seconds/d.total : 0) + ' avg.</b><small>' + fmt(d.seconds) + ' total</small></div>').join('') :
-        '<p class="adv-muted">Time insights will appear as you complete questions.</p>') + '</section>' +
-      '<section class="adv-panel"><div class="adv-list-head"><div><h2>Question review</h2><p class="adv-muted">' +
-      shown.length + ' of ' + rows.length + ' questions</p></div></div>' +
-      '<div class="adv-controls"><div>' + filters.map(([v,l]) =>
-        '<button class="adv-filter ' + ((UI.advFilter||'all')===v?'on':'') + '" data-a="advFilter" data-v="' + v + '">' + l +
-        (v==='missed'?' ('+rows.filter(r=>r.status==='missed').length+')':v==='incorrect'?' ('+rows.filter(r=>r.status==='incorrect').length+')':'') +
-        '</button>').join('') + '</div><div>' + sections.map(([v,l]) =>
-        '<button class="adv-filter ' + ((UI.advSection||'all')===v?'on':'') + '" data-a="advSection" data-v="' + v + '">' + l +
-        '</button>').join('') + '</div></div>' +
+      '<h1>Practice Test ' + T.n + '</h1>' +
+      '<section class="adv-hero">' + ringSVG(S.total, 400, 1600, 'Estimated total ' + S.total + ' out of 1600') +
+      '<div class="adv-hero-main"><div class="adv-hero-l">Estimated score</div>' +
+      '<div class="adv-hero-stats"><span><b class="g">' + right + '</b> correct</span><span><b class="r">' + wrong +
+      '</b> to review</span></div><p class="adv-fine">Unofficial estimate</p></div></section>' +
+      '<div class="adv-cols">' + sectionCard('rw', 'Reading &amp; Writing', S.rw) + sectionCard('math', 'Math', S.math) + '</div>' +
+      '<section class="adv-card"><div class="adv-list-head"><h2>Review</h2><div class="adv-controls">' +
+      '<button class="adv-filter ' + (filter === 'review' ? 'on' : '') + '" data-a="advFilter" data-v="review">To review (' + wrong + ')</button>' +
+      '<button class="adv-filter ' + (filter === 'all' ? 'on' : '') + '" data-a="advFilter" data-v="all">All (' + rows.length + ')</button></div></div>' +
       (shown.length ? '<div class="adv-question-list">' + shown.map(r =>
         '<button class="adv-question" data-a="advOpen" data-k="' + r.k + '" data-i="' + r.i + '">' +
-        '<span class="adv-qnum">Q' + (r.i+1) + '</span><span class="adv-qmain"><b>' + esc(r.q.d) +
-        '</b><small>' + esc(modTitle(r.k)) + ' · ' + esc(r.q.k) + ' · ' +
-        ({E:'Easy',M:'Medium',H:'Hard'}[r.q.l] || '') + '</small></span><span class="adv-qstatus ' + r.status + '">' +
-        ({correct:'Correct',incorrect:'Incorrect',missed:'Missed'}[r.status]) + '</span><span class="adv-qtime">' +
-        fmt(r.seconds) + '</span><span class="adv-open">Review →</span></button>').join('') +
-      '</div>' : '<p class="adv-muted">No questions match these filters.</p>') + '</section>' +
+        '<span class="adv-dot ' + r.status + '"></span><span class="adv-qnum">' + (MODS[r.k].s === 'rw' ? 'R&amp;W ' : 'Math ') +
+        MODS[r.k].num + '.' + (r.i + 1) + '</span><span class="adv-qmain">' + esc(r.q.d) + '</span><span class="adv-lvl ' +
+        r.q.l + '" title="' + (LEVEL[r.q.l] || '') + '">' + (LEVEL[r.q.l] || '').charAt(0) + '</span><span class="adv-qtime">' +
+        (r.seconds ? fmt(r.seconds) : '') + '</span></button>').join('') + '</div>' :
+        '<p class="adv-empty">Nothing to review. Perfect score!</p>') + '</section>' +
       '<div class="resacts"><button class="btn" data-a="home">Done</button><button class="btn ghost" data-a="again">Start another test</button></div>' +
       '</div></div><div class="ribbon"></div>';
     layout();
@@ -176,19 +169,18 @@
 
   drawResults = drawAdvancedResults;
   A.advFilter = b => { UI.advFilter = b.dataset.v; drawResults($('#app')); };
-  A.advSection = b => { UI.advSection = b.dataset.v; drawResults($('#app')); };
-  A.advOpen = b => {
+    A.advOpen = b => {
     UI.view = { k:b.dataset.k, i:Number(b.dataset.i) };
     draw();
     scrollTo(0,0);
   };
   // Keep review state predictable when opening another test.
   const oldOpen = A.open;
-  A.open = function (b) { UI.advFilter='all'; UI.advSection='all'; return oldOpen(b); };
+  A.open = function (b) { UI.advFilter='review'; return oldOpen(b); };
   const oldAgain = A.again;
-  A.again = function (b) { UI.advFilter='all'; UI.advSection='all'; return oldAgain(b); };
+  A.again = function (b) { UI.advFilter='review'; return oldAgain(b); };
   const oldStart = A.start;
-  A.start = function (b) { UI.advFilter='all'; UI.advSection='all'; return oldStart(b); };
+  A.start = function (b) { UI.advFilter='review'; return oldStart(b); };
 
   const style = document.createElement('style');
   style.textContent = `
@@ -197,35 +189,59 @@
     .desmos-frame{display:flex;flex:1;min-height:0;flex-direction:column;padding:10px;gap:8px}
     .desmos-frame iframe{width:100%;flex:1;min-height:280px;border:1px solid var(--line);border-radius:8px}
     .desmos-frame p{margin:0;font-size:13px}.desmos-frame a{color:var(--accent-d);font-weight:700}
-    .adv-res{max-width:1000px}.adv-res h2{font-size:17px;margin:0 0 14px}
-    .adv-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
-    .adv-kpis>div{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
-    .adv-kpis b{display:block;font-size:23px;font-variant-numeric:tabular-nums}
-    .adv-kpis span,.adv-muted{font-size:12.5px;color:var(--ink2)}
-    .adv-panel{border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
-    .adv-module,.adv-time-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
-    .adv-module:last-child,.adv-time-row:last-child{border-bottom:0}
-    .adv-module span{margin-left:auto;color:var(--ink2)}
-    .adv-domain{padding:12px 0;border-bottom:1px solid var(--line)}
-    .adv-domain:last-child{border-bottom:0}
-    .adv-domain-head{display:flex;justify-content:space-between;gap:12px;font-size:14px}
-    .adv-track{height:7px;background:var(--bar);border-radius:10px;overflow:hidden;margin:8px 0}
-    .adv-track i{display:block;height:100%;background:var(--accent);border-radius:10px}
-    .adv-meta{font-size:12px;color:var(--ink2)}
-    .adv-levels{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:12px;color:var(--ink2)}
-    .adv-time-row span{flex:1}.adv-time-row small{color:var(--ink2)}
-    .adv-controls{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
-    .adv-controls>div{display:flex;gap:6px;flex-wrap:wrap}
-    .adv-filter{border:1px solid var(--line);border-radius:18px;padding:7px 12px;font-size:12px;font-weight:700}
+    .adv-res{max-width:980px}.adv-res h1{margin-bottom:16px}
+    .adv-res h2{font-size:15px;margin:0 0 14px}
+    .adv-hero{display:flex;align-items:center;gap:28px;border:1px solid var(--line);border-radius:16px;padding:22px 28px}
+    .adv-ring{position:relative;width:150px;height:150px;flex:none}
+    .adv-ring svg{width:100%;height:100%}
+    .adv-ring-v{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .adv-ring-v b{font-size:38px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
+    .adv-ring-v span{font-size:12px;color:var(--ink2);margin-top:4px}
+    .adv-hero-l{font-size:13px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px}
+    .adv-hero-stats{display:flex;gap:22px;margin-top:12px;font-size:14px;color:var(--ink2)}
+    .adv-hero-stats b{font-size:30px;font-weight:800;margin-right:5px;font-variant-numeric:tabular-nums}
+    .adv-hero-stats .g{color:var(--good)}.adv-hero-stats .r{color:var(--bad)}
+    .adv-fine{margin:12px 0 0;font-size:11.5px;color:var(--ink2)}
+    .adv-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+    .adv-card{border:1px solid var(--line);border-radius:16px;padding:20px 22px}
+    .adv-cols .adv-card{margin:0}
+    .adv-res>.adv-card{margin:14px 0}
+    .adv-score-head{display:flex;justify-content:space-between;align-items:baseline}
+    .adv-score-head span{font-size:13px;color:var(--ink2);font-weight:600}
+    .adv-score-head b{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums}
+    .adv-range{position:relative;height:8px;background:var(--bar);border-radius:8px;margin-top:6px}
+    .adv-range i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:8px}
+    .adv-range em{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--bg);border:3px solid var(--accent-d)}
+    .adv-range-ends{display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);margin-top:5px}
+    .adv-sub{margin:22px 0 10px;font-size:11.5px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px}
+    .adv-mod{margin-bottom:14px}
+    .adv-mod-head{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px}
+    .adv-tag{margin-left:8px;font-size:11px;font-weight:700;color:var(--accent-d);background:var(--accent-s);border-radius:10px;padding:1px 8px}
+    .adv-strip{display:flex;flex-wrap:wrap;gap:5px}
+    .adv-strip .cell{width:27px;height:27px;font-size:11px;border-radius:5px}
+    .adv-strip .cell:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(15,23,34,.25)}
+    .adv-topic{margin-bottom:12px}
+    .adv-topic-head{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+    .adv-topic-head b{font-variant-numeric:tabular-nums;color:var(--ink2)}
+    .adv-track{height:8px;background:var(--bar);border-radius:8px;overflow:hidden;margin-top:5px}
+    .adv-track i{display:block;height:100%;border-radius:8px;min-width:3px}
+    .adv-track i.good{background:var(--good)}.adv-track i.mid{background:var(--r3)}.adv-track i.bad{background:var(--bad)}
+    .adv-list-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+    .adv-list-head h2{margin:0}
+    .adv-controls{display:flex;gap:6px}
+    .adv-filter{border:1px solid var(--line);border-radius:18px;padding:6px 13px;font-size:12px;font-weight:700}
     .adv-filter.on{background:var(--accent-s);border-color:var(--accent);color:var(--accent-d)}
-    .adv-question{width:100%;display:flex;align-items:center;gap:12px;text-align:left;padding:12px 4px;border-top:1px solid var(--line)}
-    .adv-qnum{font-weight:800;min-width:34px}.adv-qmain{min-width:0;flex:1}
-    .adv-qmain b,.adv-qmain small{display:block}.adv-qmain small{color:var(--ink2);font-size:11px;margin-top:3px}
-    .adv-qstatus{font-size:11px;font-weight:800;min-width:72px}
-    .adv-qstatus.correct{color:var(--good)}.adv-qstatus.incorrect{color:var(--bad)}.adv-qstatus.missed{color:var(--flag)}
-    .adv-qtime{font-size:12px;color:var(--ink2);min-width:48px;text-align:right}
-    .adv-open{font-size:12px;color:var(--accent-d);font-weight:700}
-    @media(max-width:760px){.adv-kpis{grid-template-columns:repeat(2,1fr)}.adv-panel{padding:14px}.adv-question{gap:7px}.adv-qstatus{min-width:0}.adv-open{display:none}.adv-time-row{flex-wrap:wrap}}
+    .adv-question{width:100%;display:flex;align-items:center;gap:12px;text-align:left;padding:11px 6px;border-top:1px solid var(--line);font-size:13.5px}
+    .adv-question:hover{background:var(--bar)}
+    .adv-dot{flex:none;width:10px;height:10px;border-radius:50%}
+    .adv-dot.correct{background:var(--good)}.adv-dot.incorrect{background:var(--bad)}.adv-dot.missed{background:none;border:2px dashed var(--ink2)}
+    .adv-qnum{flex:none;min-width:62px;font-weight:700}
+    .adv-qmain{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .adv-lvl{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff}
+    .adv-lvl.E{background:var(--good)}.adv-lvl.M{background:#b7791f}.adv-lvl.H{background:var(--bad)}
+    .adv-qtime{flex:none;min-width:48px;text-align:right;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+    .adv-empty{margin:18px 0 6px;font-size:14px;color:var(--ink2)}
+    @media(max-width:760px){.adv-hero{flex-direction:column;align-items:flex-start;gap:16px;padding:18px}.adv-cols{grid-template-columns:1fr}.adv-card{padding:16px}}
   `;
   document.head.appendChild(style);
 })();
