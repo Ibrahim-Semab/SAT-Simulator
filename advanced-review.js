@@ -148,6 +148,7 @@
     });
     return [...map.values()].sort((a, b) => (a.correct / a.total) - (b.correct / b.total) || a.name.localeCompare(b.name));
   }
+  const pct = (n, t) => (t ? Math.round(100 * n / t) : 0) + '%';
   const tone = p => p >= 75 ? 'good' : p >= 50 ? 'mid' : 'bad';
   const LEVEL = { E: 'Easy', M: 'Medium', H: 'Hard' };
 
@@ -191,6 +192,7 @@
   function sectionCard(subject, name, sec) {
     const rows = allRows().filter(r => MODS[r.k].s === subject);
     return '<section class="adv-card"><h2>' + name + '</h2>' + scoreRow('Score', sec) +
+      '<div class="adv-acc"><span>Accuracy</span><b>' + pct(rows.filter(r => r.correct).length, rows.length) + '</b><small>' + rows.filter(r => r.correct).length + ' of ' + rows.length + ' correct</small></div>' +
       '<div class="adv-sub">Modules</div>' + modulesFor(subject).map(moduleStrip).join('') +
       '<div class="adv-sub">Topics · weakest first</div>' + topicBars(rows) + '</section>';
   }
@@ -230,7 +232,7 @@
       '<section class="adv-hero">' + ringSVG(S.total, 400, 1600, 'Estimated total ' + S.total + ' out of 1600') +
       '<div class="adv-hero-main"><div class="adv-hero-l">Estimated score</div>' +
       '<div class="adv-hero-stats"><span><b class="g">' + right + '</b> correct</span><span><b class="r">' + wrong +
-      '</b> to review</span></div><p class="adv-fine">Unofficial estimate</p></div></section>' +
+      '</b> to review</span><span><b>' + pct(right, rows.length) + '</b> accuracy</span></div><p class="adv-fine">Unofficial estimate</p></div></section>' +
       '<div class="adv-cols">' + sectionCard('rw', 'Reading &amp; Writing', S.rw) + sectionCard('math', 'Math', S.math) + '</div>' +
       ((t1, t2) => (t1 || t2) ? '<h2 class="adv-sect">Time · slowest question types</h2><div class="adv-cols">' + t1 + t2 + '</div>' : '')(
         timeCard('rw', 'Reading &amp; Writing'), timeCard('math', 'Math')) +
@@ -258,7 +260,7 @@
   A.advSize = b => { UI.advSize = Number(b.dataset.v); UI.advPage = 1; drawResults($('#app')); };
   A.advPage = b => { UI.advPage = Number(b.dataset.v); drawResults($('#app')); const l = $('.adv-question-list'); if (l) l.scrollIntoView({block:'start'}); };
     A.advOpen = b => {
-    UI.view = { k:b.dataset.k, i:Number(b.dataset.i) };
+    UI.view = { k:b.dataset.k, i:Number(b.dataset.i), f:(UI.advFilter || 'review') === 'review' ? 'review' : '' };
     draw();
     scrollTo(0,0);
   };
@@ -299,6 +301,7 @@
     .adv-hero-stats{display:flex;gap:22px;margin-top:12px;font-size:14px;color:var(--ink2)}
     .adv-hero-stats b{font-size:30px;font-weight:800;margin-right:5px;font-variant-numeric:tabular-nums}
     .adv-hero-stats .g{color:var(--good)}.adv-hero-stats .r{color:var(--bad)}
+    .adv-acc{display:flex;align-items:baseline;gap:10px;margin-top:10px;font-size:13px;color:var(--ink2);font-weight:600}.adv-acc b{font-size:22px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}.adv-acc small{margin-left:auto;font-weight:500;font-size:12px}
     .adv-fine{margin:12px 0 0;font-size:11.5px;color:var(--ink2)}
     .adv-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
     .adv-card{border:1px solid var(--line);border-radius:16px;padding:20px 22px}

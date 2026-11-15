@@ -419,12 +419,23 @@ function isCorrect(q,v){
   return opts.some(a=>{const an=numVal(a);return an!==null&&Math.abs(n-an)<=Math.max(5e-5,Math.abs(an)*5e-5)});
 }
 const modCorrect=k=>(T.plan[k]||[]).reduce((n,id)=>n+(isCorrect(BYID[id],T.ans[id])?1:0),0);
-function estScaled(items,route){            // rough estimate only, not an official conversion
+/* Scaled-score estimate: item response theory, as the official Digital SAT is scored. Every question is a 3PL item
+   (difficulty b by level, guessing floor for multiple choice); ability is the posterior mean given all answers, so a miss
+   on an easy question lowers it more than a miss on a hard one, and a hit on a hard question raises it more.
+   Estimate only - the real item parameters are not public. */
+const IRT={b:{E:-1.15,M:0.05,H:1.2},a:0.9,guess:0.2,priorSd:1,scale:90};
+function estScaled(items){
   if(!items.length)return 200;
-  const w={E:1,M:2,H:3};let g=0,t=0;
-  items.forEach(x=>{t+=w[x.q.l];if(x.ok)g+=w[x.q.l]});
-  const cap=route==='l'?.78:1;
-  return clamp(Math.round((200+600*(g/t)*cap)/10)*10,200,800);
+  let num=0,den=0;
+  for(let th=-4;th<=4.0001;th+=0.05){
+    let ll=-0.5*th*th/(IRT.priorSd*IRT.priorSd);
+    for(const x of items){
+      const c=x.q.m==='MCQ'?IRT.guess:0,p=c+(1-c)/(1+Math.exp(-IRT.a*(th-IRT.b[x.q.l])));
+      ll+=Math.log(x.ok?p:1-p);
+    }
+    const w=Math.exp(ll);num+=w*th;den+=w;
+  }
+  return clamp(Math.round((500+IRT.scale*num/den)/10)*10,200,800);
 }
 function summarize(t){
   const S={};
@@ -665,7 +676,10 @@ function drawResults(app){
   ${ORDER.map(mrow).join('')}
   <div class="resacts"><button class="btn" data-a="home">Done</button><button class="btn ghost" data-a="again">Start another test</button></div></div></div><div class="ribbon"></div>`;
 }
-function qReviewList(){return ORDER.filter(k=>T.plan[k]).flatMap(k=>T.plan[k].map((id,i)=>({k,i,id})))}
+function qReviewList(){            // with the "To review" filter on, Back / Next walk only the questions that were not answered correctly
+  const all=ORDER.filter(k=>T.plan[k]).flatMap(k=>T.plan[k].map((id,i)=>({k,i,id})));
+  return UI.view&&UI.view.f==='review'?all.filter(x=>!isCorrect(BYID[x.id],T.ans[x.id])):all;
+}
 function drawQReview(app){
   const L=qReviewList();let p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p<0)p=0;
   const it=L[p],q=BYID[it.id],ans=T.ans[it.id],ok=isCorrect(q,ans);
@@ -947,8 +961,8 @@ const A={
   resume(){loadModule('m1')},
   qrev(b){UI.view={k:b.dataset.k,i:+b.dataset.i};draw();scrollTo(0,0)},
   qrback(){UI.view=null;draw()},
-  qrprev(){const L=qReviewList(),p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p>0){UI.view={k:L[p-1].k,i:L[p-1].i};draw();$('.center').scrollTo(0,0)}},
-  qrnext(){const L=qReviewList(),p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p<L.length-1){UI.view={k:L[p+1].k,i:L[p+1].i};draw();$('.center').scrollTo(0,0)}}
+  qrprev(){const L=qReviewList(),p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p>0){UI.view={k:L[p-1].k,i:L[p-1].i,f:UI.view.f};draw();$('.center').scrollTo(0,0)}},
+  qrnext(){const L=qReviewList(),p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p<L.length-1){UI.view={k:L[p+1].k,i:L[p+1].i,f:UI.view.f};draw();$('.center').scrollTo(0,0)}}
 };
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-a]');
