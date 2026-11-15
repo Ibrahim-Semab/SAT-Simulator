@@ -8,7 +8,7 @@ Input  : the original single-file simulator (.html with `const DB={...}`) or a J
          Several inputs can be given; questions are de-duplicated by id.
 Output : bank/meta.js        (window.BANK = [...])
          bank/q/<id>.webp    (cleaned question image)
-         bank/r/<id>.webp    (rationale image)
+         bank/rat.js + bank/m/*.webp (explanations, built by tools/pdf_pipeline)
 
 Each question image is a screenshot with a "Question" heading, the stem, an "Answer" heading
 and the A-D choices. The script finds those parts so the app can lay them out like Bluebook

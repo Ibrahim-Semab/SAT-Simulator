@@ -249,6 +249,7 @@ svg{display:block}
 .rv .chip.b{background:var(--bad-s);border-color:var(--bad);color:var(--bad)}
 .rv .qa{border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:18px}
 .rv .rvq{color:var(--ink)}
+.rv .ratx{font-size:15px;line-height:1.7}.rv .ratx .rp{margin:0 0 12px}.rv .ratx .mi{display:inline-block;mix-blend-mode:multiply}.rv .ratx .md{display:block;margin:8px auto}.rv .ratx sup,.rv .ratx sub{line-height:0}
 .rv img.rat{max-width:100%;height:auto;display:block;margin-top:6px}
 .rv h4{margin:18px 0 4px;font-size:14px}
 .yours{margin-top:14px;font-size:15px}
@@ -268,6 +269,14 @@ svg{display:block}
 <div id="ov"></div>
 <script src="bank/meta.js"></script>
 <script>
+/* Explanations: text + equation pieces from bank/rat.js (lazy); falls back to the old screenshot */
+let RATLOAD=null;
+function ratHTML(id){
+  if(window.RAT){const r=window.RAT[id];if(r)return r.map(p=>'<div class="rp">'+p+'</div>').join('');return '';}
+  if(!RATLOAD){RATLOAD=new Promise(res=>{const sc=document.createElement('script');sc.src='bank/rat.js';sc.onload=res;sc.onerror=res;document.head.appendChild(sc);}).then(()=>{document.querySelectorAll('.ratx[data-rid]').forEach(e=>{e.innerHTML=ratHTML(e.dataset.rid);});});}
+  return '<span style="color:var(--ink2)">Loading…</span>';
+}
+
 "use strict";
 /* ═════════════ constants ═════════════ */
 const ORDER=['rw1','rw2','m1','m2'];
@@ -658,7 +667,7 @@ function drawQReview(app){
   app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="rv"><div class="info"><span class="chip ${ok?'g':'b'}">${ok?'Correct':has(ans)?'Incorrect':'Unanswered'}</span>
   <b class="rvq">${MODS[it.k].s==='rw'?'R&amp;W':'Math'} ${MODS[it.k].num}.${it.i+1}</b><span>${esc(q.d)}</span><span class="chip">${{E:'Easy',M:'Medium',H:'Hard'}[q.l]}</span></div>
   <div class="qa">${stemHTML(q,false)}<div style="height:18px"></div>${body}</div>
-  <div class="qa"><h4 style="margin-top:0">Explanation</h4><img class="rat" src="bank/r/${q.id}.webp" alt="Explanation"></div></div></div>
+  <div class="qa"><h4 style="margin-top:0">Explanation</h4><div class="ratx" data-rid="${q.id}">${ratHTML(q.id)}</div></div></div></div>
   <div class="ribbon"></div>
   <footer class="ftr"><div class="who">Practice Test ${T.n}</div><button class="navpill" data-a="qrback">Back to results</button>
   <div class="fr-r">${p>0?'<button class="btn" data-a="qrprev">Back</button>':''}${p<L.length-1?'<button class="btn" data-a="qrnext">Next</button>':''}</div></footer>`;
