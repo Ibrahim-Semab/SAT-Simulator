@@ -10,10 +10,12 @@ PAD = 0.7
 class PageRaster:
     def __init__(self, page):
         self.page = page; self.W, self.H = page.get_size(); self.a = None
+    def rgb(self):
+        if getattr(self, '_rgb', None) is None: self._rgb = self.page.render(scale=SCALE).to_pil().convert('RGB')
+        return self._rgb
     def alpha(self):
         if self.a is None:
-            im = self.page.render(scale=SCALE).to_pil().convert('L')
-            self.a = 255 - np.array(im); self.a[self.a < 12] = 0          # drop paper noise
+            self.a = 255 - np.array(self.rgb().convert('L')); self.a[self.a < 12] = 0          # drop paper noise
         return self.a
 
 def render_piece(pr, box, out_dir):
