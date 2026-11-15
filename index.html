@@ -700,7 +700,7 @@ function drawHome(app){
   <div class="startrow"><button class="btn big" data-a="start">Start Practice Test ${(H.n||0)+(cur?1:1)}</button></div>
   <div class="cover"><i style="width:${BANK.length?Math.round(100*seen/BANK.length):0}%"></i></div><div class="covt">${seen} of ${BANK.length} questions seen</div>
   ${rows?`<div class="hist">${rows}</div>`:''}
-  <div class="tiny">${(H.tests.length||cur||seen)?'<button class="link" data-a="reset">Reset history</button>':''}<p class="disc">Practice material based on College Board content. Independent study tool; not an official College Board product.</p></div></div></div><div class="ribbon"></div>`;
+  <div class="tiny">${(H.tests.length||cur||seen)?'<button class="link" data-a="reset">Reset history</button>':''}<p class="disc">Practice material based on College Board's Question Bank. Independent study tool; not an official College Board product.</p></div></div></div><div class="ribbon"></div>`;
 }
 
 /* ═════════════ layout / scale ═════════════ */
@@ -931,7 +931,7 @@ const A={
   more(){toggleMore()},
   fsize(b){UI.fs=+b.dataset.v;store.set('sat.fs',UI.fs);closePops();layout()},
   layout(b){UI.layout=b.dataset.v;UI.split=null;store.set('sat.layout',UI.layout);closePops();layout()},
-  exit(){closePops();modal('Save and exit?','Your progress is saved. You can resume this test from the home screen.','<button class="btn ghost" data-a="mclose">Cancel</button><button class="btn" data-a="exitnow">Save &amp; exit</button>')},
+  exit(){closePops();save();clearInterval(tickH);T=null;closeAll();draw()},
   exitnow(){closeModal();save();clearInterval(tickH);T=null;closeAll();draw()},
   mclose(){closeModal()},
   hidetime(){UI.timer=!UI.timer;drawTimer()},
