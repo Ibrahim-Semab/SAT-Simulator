@@ -184,7 +184,7 @@ svg{display:block}
 .rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 10px}
 .rgrid>div{text-align:center;font-size:12.5px;line-height:1.5}
 .rgrid svg{margin:0 auto 4px;width:100%;max-width:140px;height:84px;stroke:var(--ink);fill:none;stroke-width:1.6}
-.rgrid svg text{fill:var(--ink);stroke:none;font-size:11px;font-family:inherit}
+.rgrid svg text{fill:var(--ink);stroke:var(--bg);stroke-width:3px;paint-order:stroke;stroke-linejoin:round;font-size:11px;font-family:inherit}
 .rfacts{margin:14px 0 0;padding-left:18px;font-size:13px;line-height:1.6}
 .notes{width:320px}
 .notes textarea{display:block;width:calc(100% - 24px);margin:12px;height:150px;resize:vertical;padding:10px;border:1.5px solid var(--ink);border-radius:8px;font:inherit;font-size:14px}
@@ -419,12 +419,23 @@ function isCorrect(q,v){
   return opts.some(a=>{const an=numVal(a);return an!==null&&Math.abs(n-an)<=Math.max(5e-5,Math.abs(an)*5e-5)});
 }
 const modCorrect=k=>(T.plan[k]||[]).reduce((n,id)=>n+(isCorrect(BYID[id],T.ans[id])?1:0),0);
-function estScaled(items,route){            // rough estimate only, not an official conversion
+/* Scaled-score estimate: item response theory, as the official Digital SAT is scored. Every question is a 3PL item
+   (difficulty b by level, guessing floor for multiple choice); ability is the posterior mean given all answers, so a miss
+   on an easy question lowers it more than a miss on a hard one, and a hit on a hard question raises it more.
+   Estimate only - the real item parameters are not public. */
+const IRT={b:{E:-1.15,M:0.05,H:1.2},a:0.9,guess:0.2,priorSd:1,scale:90};
+function estScaled(items){
   if(!items.length)return 200;
-  const w={E:1,M:2,H:3};let g=0,t=0;
-  items.forEach(x=>{t+=w[x.q.l];if(x.ok)g+=w[x.q.l]});
-  const cap=route==='l'?.78:1;
-  return clamp(Math.round((200+600*(g/t)*cap)/10)*10,200,800);
+  let num=0,den=0;
+  for(let th=-4;th<=4.0001;th+=0.05){
+    let ll=-0.5*th*th/(IRT.priorSd*IRT.priorSd);
+    for(const x of items){
+      const c=x.q.m==='MCQ'?IRT.guess:0,p=c+(1-c)/(1+Math.exp(-IRT.a*(th-IRT.b[x.q.l])));
+      ll+=Math.log(x.ok?p:1-p);
+    }
+    const w=Math.exp(ll);num+=w*th;den+=w;
+  }
+  return clamp(Math.round((500+IRT.scale*num/den)/10)*10,200,800);
 }
 function summarize(t){
   const S={};
@@ -665,7 +676,10 @@ function drawResults(app){
   ${ORDER.map(mrow).join('')}
   <div class="resacts"><button class="btn" data-a="home">Done</button><button class="btn ghost" data-a="again">Start another test</button></div></div></div><div class="ribbon"></div>`;
 }
-function qReviewList(){return ORDER.filter(k=>T.plan[k]).flatMap(k=>T.plan[k].map((id,i)=>({k,i,id})))}
+function qReviewList(){            // with the "To review" filter on, Back / Next walk only the questions that were not answered correctly
+  const all=ORDER.filter(k=>T.plan[k]).flatMap(k=>T.plan[k].map((id,i)=>({k,i,id})));
+  return UI.view&&UI.view.f==='review'?all.filter(x=>!isCorrect(BYID[x.id],T.ans[x.id])):all;
+}
 function drawQReview(app){
   const L=qReviewList();let p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p<0)p=0;
   const it=L[p],q=BYID[it.id],ans=T.ans[it.id],ok=isCorrect(q,ans);
@@ -700,7 +714,7 @@ function drawHome(app){
   <div class="startrow"><button class="btn big" data-a="start">Start Practice Test ${(H.n||0)+(cur?1:1)}</button></div>
   <div class="cover"><i style="width:${BANK.length?Math.round(100*seen/BANK.length):0}%"></i></div><div class="covt">${seen} of ${BANK.length} questions seen</div>
   ${rows?`<div class="hist">${rows}</div>`:''}
-  <div class="tiny">${(H.tests.length||cur||seen)?'<button class="link" data-a="reset">Reset history</button>':''}<p class="disc">Practice material based on College Board content. Independent study tool; not an official College Board product.</p></div></div></div><div class="ribbon"></div>`;
+  <div class="tiny">${(H.tests.length||cur||seen)?'<button class="link" data-a="reset">Reset history</button>':''}<p class="disc">Practice material based on College Board's Question Bank. Independent study tool; not an official College Board product.</p></div></div></div><div class="ribbon"></div>`;
 }
 
 /* ═════════════ layout / scale ═════════════ */
@@ -880,13 +894,13 @@ function openRef(){
   ${fig('<rect x="22" y="16" width="96" height="52"/><text x="64" y="80">ℓ</text><text x="8" y="46">w</text>','A = ℓw')}
   ${fig('<path d="M20 70L90 70L62 14z"/><path d="M62 14V70" stroke-dasharray="4 3"/><text x="52" y="44">h</text><text x="50" y="81">b</text>','A = ½bh')}
   ${fig('<path d="M24 70h92V20z"/><path d="M104 70v-9h12"/><text x="62" y="81">a</text><text x="120" y="48">b</text><text x="56" y="38">c</text>','c² = a² + b²')}
-  ${fig('<path d="M20 70h96L20 18z"/><path d="M20 62h8v8"/><text x="52" y="82">x√3</text><text x="8" y="48">x</text><text x="72" y="36">2x</text><text x="84" y="62">30°</text><text x="24" y="34">60°</text>','Special right triangle')}
-  ${fig('<path d="M24 70h70V20z"/><path d="M24 62h8v8"/><text x="52" y="82">s</text><text x="8" y="48">s</text><text x="44" y="38">s√2</text>','Special right triangle')}
-  ${fig('<path d="M20 30l30-12h60v34l-30 12H20z"/><path d="M20 30h60l30-12M80 30v34"/>','V = ℓwh')}
-  ${fig('<ellipse cx="70" cy="20" rx="34" ry="10"/><path d="M36 20v42M104 20v42"/><path d="M36 62a34 10 0 0 0 68 0"/>','V = πr²h')}
-  ${fig('<circle cx="70" cy="42" r="34"/><ellipse cx="70" cy="42" rx="34" ry="10" stroke-dasharray="4 3"/>','V = <sup>4</sup>⁄<sub>3</sub>πr³')}
-  ${fig('<path d="M70 8L34 66h72z"/><ellipse cx="70" cy="66" rx="36" ry="9"/>','V = <sup>1</sup>⁄<sub>3</sub>πr²h')}
-  ${fig('<path d="M70 8L24 62l30 14h50l12-20z"/><path d="M70 8l-16 68M70 8l34 68"/>','V = <sup>1</sup>⁄<sub>3</sub>ℓwh')}
+  ${fig('<path d="M20 70h96L20 18z"/><path d="M20 62h8v8"/><text x="52" y="82">x√3</text><text x="6" y="46">x</text><text x="68" y="38">2x</text><text x="72" y="65">30°</text><text x="24" y="42">60°</text>','Special right triangle')}
+  ${fig('<path d="M26 72h58L26 14z"/><path d="M26 64h8v8"/><text x="52" y="83">s</text><text x="12" y="46">s</text><text x="62" y="36">s√2</text>','Special right triangle')}
+  ${fig('<path d="M20 36h64v36H20z"/><path d="M20 36l30-20h64l-30 20M84 72l30-20V16"/><path d="M50 16v36l-30 20M50 52h64" stroke-dasharray="4 3"/><text x="46" y="83">ℓ</text><text x="8" y="58">h</text><text x="104" y="68">w</text>','V = ℓwh')}
+  ${fig('<ellipse cx="70" cy="18" rx="34" ry="10"/><path d="M36 18v44M104 18v44"/><path d="M36 62a34 10 0 0 0 68 0"/><path d="M36 62a34 10 0 0 1 68 0" stroke-dasharray="4 3"/><path d="M70 18h34"/><text x="86" y="26">r</text><text x="110" y="44">h</text>','V = πr²h')}
+  ${fig('<circle cx="70" cy="42" r="34"/><path d="M36 42a34 10 0 0 0 68 0"/><path d="M36 42a34 10 0 0 1 68 0" stroke-dasharray="4 3"/><path d="M70 42h34"/><text x="86" y="49.5">r</text>','V = <sup>4</sup>⁄<sub>3</sub>πr³')}
+  ${fig('<path d="M70 8L34 66M70 8L106 66"/><ellipse cx="70" cy="66" rx="36" ry="9"/><path d="M70 8v58M70 66h36" stroke-dasharray="4 3"/><text x="74" y="40">h</text><text x="86" y="57">r</text>','V = <sup>1</sup>⁄<sub>3</sub>πr²h')}
+  ${fig('<path d="M26 72h72l14-17M70 8L26 72M70 8l28 64M70 8l42 47"/><path d="M26 72l14-17h72M70 8L40 55M70 8v60" stroke-dasharray="4 3"/><text x="58" y="83">ℓ</text><text x="74" y="44">h</text><text x="114" y="70">w</text>','V = <sup>1</sup>⁄<sub>3</sub>ℓwh')}
   </div><ul class="rfacts"><li>The number of degrees of arc in a circle is 360.</li><li>The number of radians of arc in a circle is 2π.</li><li>The sum of the angle measures in a triangle is 180 degrees.</li></ul></div>`,'ref',{left:'calc(50% - 280px)',top:'60px',right:'auto'});
 }
 function openNotes(){
@@ -931,7 +945,7 @@ const A={
   more(){toggleMore()},
   fsize(b){UI.fs=+b.dataset.v;store.set('sat.fs',UI.fs);closePops();layout()},
   layout(b){UI.layout=b.dataset.v;UI.split=null;store.set('sat.layout',UI.layout);closePops();layout()},
-  exit(){closePops();modal('Save and exit?','Your progress is saved. You can resume this test from the home screen.','<button class="btn ghost" data-a="mclose">Cancel</button><button class="btn" data-a="exitnow">Save &amp; exit</button>')},
+  exit(){closePops();save();clearInterval(tickH);T=null;closeAll();draw()},
   exitnow(){closeModal();save();clearInterval(tickH);T=null;closeAll();draw()},
   mclose(){closeModal()},
   hidetime(){UI.timer=!UI.timer;drawTimer()},
@@ -947,8 +961,8 @@ const A={
   resume(){loadModule('m1')},
   qrev(b){UI.view={k:b.dataset.k,i:+b.dataset.i};draw();scrollTo(0,0)},
   qrback(){UI.view=null;draw()},
-  qrprev(){const L=qReviewList(),p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p>0){UI.view={k:L[p-1].k,i:L[p-1].i};draw();$('.center').scrollTo(0,0)}},
-  qrnext(){const L=qReviewList(),p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p<L.length-1){UI.view={k:L[p+1].k,i:L[p+1].i};draw();$('.center').scrollTo(0,0)}}
+  qrprev(){const L=qReviewList(),p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p>0){UI.view={k:L[p-1].k,i:L[p-1].i,f:UI.view.f};draw();$('.center').scrollTo(0,0)}},
+  qrnext(){const L=qReviewList(),p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p<L.length-1){UI.view={k:L[p+1].k,i:L[p+1].i,f:UI.view.f};draw();$('.center').scrollTo(0,0)}}
 };
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-a]');
