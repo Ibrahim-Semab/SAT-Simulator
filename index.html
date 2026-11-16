@@ -59,8 +59,8 @@ svg{display:block}
 .crop{display:block;position:relative;overflow:hidden;max-width:100%;width:calc(var(--cw)*var(--fs)/14*1px);aspect-ratio:var(--cw)/var(--ch)}
 .crop img,.ic img{position:absolute;max-width:none;height:auto;pointer-events:none;user-select:none;-webkit-user-drag:none}
 .ic{display:inline-block;position:relative;overflow:hidden;vertical-align:middle;max-width:100%;width:calc(var(--cw)*var(--fs)/14*1px);aspect-ratio:var(--cw)/var(--ch);margin:0 1px}
-.stem{position:relative;display:block;font-size:calc(var(--fs)*1px);line-height:1.65;user-select:none;max-width:820px}
-.stem.hl-on{cursor:text;user-select:text}
+.stem{position:relative;display:block;font-size:calc(var(--fs)*1px);line-height:1.65;user-select:text;-webkit-user-select:text;cursor:text;max-width:820px}
+::selection{background:#b4d5fe}
 .stem p{margin:0 0 .85em;white-space:pre-line}
 .stem p.eq{text-align:center;margin:.35em 0 .9em}
 .stem p.h{font-weight:700;margin-top:1.1em}
@@ -71,7 +71,7 @@ svg{display:block}
 .stem .fig{margin:.15em 0 1em;text-align:center}.stem .fig .mf{margin:0 auto}
 .choice .ct .mf{margin:0}
 .stem u{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
-.stem mark{background:#ffd84d;color:inherit;border-radius:2px;padding:0}
+.stem mark,.prompt mark,.choice mark{background:#ffd84d;color:inherit;border-radius:2px;padding:0}
 .hl-on mark{cursor:pointer}.hl-on mark:hover{outline:2px solid var(--flag)}
 .hlbox{position:absolute;background:#ffd84d;mix-blend-mode:multiply;opacity:.75;border-radius:2px}
 .hl-on .hlbox{cursor:pointer}
@@ -94,15 +94,17 @@ svg{display:block}
 .main.side .pane.right{overflow:hidden}
 
 /* choices */
-.prompt{margin-bottom:22px;font-size:calc(var(--fs)*1px);line-height:1.6}
+.prompt{margin-bottom:22px;font-size:calc(var(--fs)*1px);line-height:1.6;user-select:text;-webkit-user-select:text;cursor:text}
 .choices{display:flex;flex-direction:column;gap:12px}
-.choice{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:1.5px solid var(--ink);border-radius:10px;padding:10px 14px;background:var(--bg);position:relative;transition:border-color .1s,background .1s}
+.choice{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:1.5px solid var(--ink);border-radius:10px;padding:10px 14px;background:var(--bg);position:relative;transition:border-color .1s,background .1s;cursor:pointer;font:inherit;color:inherit}
+.choice:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.letter,.xb,.tag{user-select:none;-webkit-user-select:none}
 .choice:hover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .letter{flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font-weight:700;font-size:14px}
 .choice.sel{border-color:var(--accent);background:var(--accent-s);box-shadow:0 0 0 1px var(--accent)}
 .choice.sel .letter{background:var(--accent);border-color:var(--accent);color:#fff}
 .choice .ct{position:relative;min-width:0;font-size:calc(var(--fs)*1px);line-height:1.5;text-align:left}
-.choice .ct.txt{display:inline-block;flex:0 1 auto;white-space:pre-line}
+.choice .ct.txt{display:inline-block;flex:0 1 auto;white-space:pre-line;user-select:text;-webkit-user-select:text;cursor:text}
 .choice .ic.ct{flex:none;mix-blend-mode:multiply}
 .choice.out{border-style:dashed;border-color:#8b96a3;box-shadow:none}
 .choice.out .ct{opacity:.38}
@@ -560,11 +562,22 @@ function stemHTML(q,withHl){
   if(q.P)h+=parasHTML(q,q.P,hl);
   return `<div class="stem ${UI.hlMode&&withHl?'hl-on':''}" id="stem">${h}</div>`;
 }
-const promptHTML=q=>q.PR?`<div class="prompt">${rich(q,q.PR)}</div>`:'';
-function choiceHTML(q,L,i,cls,attrs,extra=''){
+/* question prompt and answer choices: highlight keys are 'q' (prompt) and 'A'–'D' (choices), stored like [key, start, end].
+   Text containing pictures or <sup>/<sub> falls back to plain rendering (offsets would not line up). */
+function hlText(q,raw,key,hl){
+  const rg=(hl||[]).map((b,i)=>b.length===3&&b[0]===key?[b[1],b[2],i]:null).filter(Boolean);
+  return rg.length&&!/[\[⟦<]/.test(raw)?markText(raw,rg,[]):rich(q,raw);
+}
+const promptHTML=(q,hl)=>q.PR?`<div class="prompt" data-p="q">${hlText(q,q.PR,'q',hl)}</div>`:'';
+function choiceHTML(q,L,i,cls,attrs,extra='',hl){
   const o=q.o&&q.o[i];
-  const body=typeof o==='string'?`<span class="ct txt">${rich(q,o)}</span>`:Array.isArray(o)?inlineCrop(q,o,'ct'):'';
-  return `<button class="choice ${cls}" ${attrs}><span class="letter">${L}</span>${body}${extra}</button>`;
+  const body=typeof o==='string'?`<span class="ct txt" data-p="${L}">${hlText(q,o,L,hl)}</span>`:Array.isArray(o)?inlineCrop(q,o,'ct'):'';
+  return `<div class="choice ${cls}" role="button" ${attrs}><span class="letter">${L}</span>${body}${extra}</div>`;
+}
+function mcqHTML(q,id){
+  const el=T.el[id]||{},hl=T.hl[id]||[];
+  return promptHTML(q,hl)+`<div class="choices ${UI.elim?'elim':''}" id="choices">${['A','B','C','D'].map((L,i)=>
+    choiceHTML(q,L,i,(T.ans[id]===L?'sel ':'')+(el[L]?'out':''),`data-a="pick" data-v="${L}" tabindex="0"`,`<span class="xb" data-a="x" data-v="${L}" title="Cross out">${L}</span>`,hl)).join('')}</div>`;
 }
 const usesImg=q=>!!(q.si||q.fg||tokUrls(q).length||(q.o&&q.o.some(Array.isArray))||(q.P&&q.P.some(p=>p.includes('[[')))||(q.PR&&q.PR.includes('[['))||(q.o&&q.o.some(o=>typeof o==='string'&&o.includes('[['))));
 
@@ -604,13 +617,11 @@ function drawExam(app){
   if(q.m==='SPR'){
     right=`<div class="spr"><label for="spr">Enter your answer</label><input id="spr" autocomplete="off" inputmode="text" maxlength="6" value="${esc(T.ans[id]||'')}"><div class="sprprev">Answer preview:<div class="box" id="sprprev"></div></div></div>`;
   }else{
-    const el=T.el[id]||{};
-    right=promptHTML(q)+`<div class="choices ${UI.elim?'elim':''}" id="choices">${['A','B','C','D'].map((L,i)=>
-      choiceHTML(q,L,i,(T.ans[id]===L?'sel ':'')+(el[L]?'out':''),`data-a="pick" data-v="${L}"`,`<span class="xb" data-a="x" data-v="${L}" title="Cross out">${L}</span>`)).join('')}</div>`;
+    right=mcqHTML(q,id);
   }
   app.innerHTML=headerHTML(k)+
   `<main class="main" id="main"><section class="pane left" id="pl"><div class="pad">${stemHTML(q,MODS[k].s==='rw')}</div></section><div class="divider" id="dv"></div>
-   <section class="pane right" id="pr"><div class="qbar"><div class="qn">${T.idx+1}</div>
+   <section class="pane right ${UI.hlMode&&MODS[k].s==='rw'?'hl-on':''}" id="pr"><div class="qbar"><div class="qn">${T.idx+1}</div>
    <button class="mark ${T.mark[id]?'on':''}" data-a="mark" id="markbtn">${ICON.flag}Mark for Review</button>
    ${q.m==='MCQ'?`<button class="abc ${UI.elim?'on':''}" data-a="elim" title="Cross out answer choices">ABC</button>`:''}</div>
    <div class="right-scroll"><div class="pad">${right}</div></div></section></main>
@@ -630,7 +641,7 @@ function drawExam(app){
   }
   // preload neighbours
   [T.idx+1,T.idx-1].forEach(i=>{const n=BYID[list[i]];if(n&&usesImg(n)){tokUrls(n).forEach(u=>{const im=new Image();im.src=u});if(n.w){const im=new Image();im.src=`bank/q/${n.id}.webp`}}});
-  bindStem();bindDivider();
+  bindStem();bindRight();bindDivider();
   const nw=document.getElementById('noteswin');if(nw){nw.remove();if(UI.hlMode)openNotes()}
 }
 function fracHTML(v){
@@ -747,6 +758,47 @@ function addRange(arr,pi,s0,e0){
   for(let i=arr.length-1;i>=0;i--){const b=arr[i];if(b.length===3&&b[0]===pi&&b[1]<=e0&&b[2]>=s0){s0=Math.min(s0,b[1]);e0=Math.max(e0,b[2]);arr.splice(i,1)}}
   arr.push([pi,s0,e0]);
 }
+/* turn the current text selection inside `root` into [key, start, end] ranges (and clear the selection) */
+function selectedRanges(root){
+  const sel=getSelection();if(!sel||sel.isCollapsed||!sel.rangeCount)return[];
+  const range=sel.getRangeAt(0),found=[];
+  root.querySelectorAll('[data-p]').forEach(p=>{
+    if(!range.intersectsNode(p))return;
+    const whole=document.createRange();whole.selectNodeContents(p);
+    const s0=range.compareBoundaryPoints(Range.START_TO_START,whole)<0?0:offsetIn(p,range.startContainer,range.startOffset);
+    const e0=range.compareBoundaryPoints(Range.END_TO_END,whole)>0?p.textContent.length:offsetIn(p,range.endContainer,range.endOffset);
+    const k=/^\d+$/.test(p.dataset.p)?+p.dataset.p:p.dataset.p;
+    if(e0>s0)found.push([k,s0,e0]);
+  });
+  sel.removeAllRanges();
+  return found;
+}
+/* the question prompt and answer choices (right pane) can be highlighted too */
+let skipClick=false;
+function redrawRight(){
+  const q=BYID[T.plan[T.mod][T.idx]],id=q.id,pad=document.querySelector('#pr .right-scroll .pad');
+  if(pad&&q.m!=='SPR')pad.innerHTML=mcqHTML(q,id);
+}
+function bindRight(){
+  const rs=document.querySelector('#pr .right-scroll');if(!rs||MODS[T.mod].s!=='rw')return;
+  const id=T.plan[T.mod][T.idx];
+  rs.addEventListener('mousedown',()=>{skipClick=false},true);
+  rs.addEventListener('mouseup',()=>{
+    if(!UI.hlMode)return;
+    const found=selectedRanges(rs);
+    if(!found.length)return;
+    const arr=T.hl[id]=T.hl[id]||[];
+    found.forEach(f=>addRange(arr,...f));
+    skipClick=true;            // the drag must not also pick the answer under the cursor
+    save();redrawRight();
+  });
+  rs.addEventListener('click',e=>{
+    if(skipClick){skipClick=false;e.stopPropagation();e.preventDefault();return}
+    if(!UI.hlMode)return;
+    const m=e.target.closest('mark');
+    if(m){e.stopPropagation();e.preventDefault();(T.hl[id]||[]).splice(+m.dataset.i,1);save();redrawRight()}
+  },true);
+}
 function bindStem(){
   const st=$('#stem');if(!st||MODS[T.mod].s!=='rw')return;
   const id=T.plan[T.mod][T.idx];
@@ -757,16 +809,7 @@ function bindStem(){
   });
   st.addEventListener('mouseup',()=>{
     if(!UI.hlMode)return;
-    const sel=getSelection();if(!sel||sel.isCollapsed||!sel.rangeCount)return;
-    const range=sel.getRangeAt(0),found=[];
-    st.querySelectorAll('[data-p]').forEach(p=>{
-      if(!range.intersectsNode(p))return;
-      const whole=document.createRange();whole.selectNodeContents(p);
-      const s0=range.compareBoundaryPoints(Range.START_TO_START,whole)<0?0:offsetIn(p,range.startContainer,range.startOffset);
-      const e0=range.compareBoundaryPoints(Range.END_TO_END,whole)>0?p.textContent.length:offsetIn(p,range.endContainer,range.endOffset);
-      if(e0>s0)found.push([+p.dataset.p,s0,e0]);
-    });
-    sel.removeAllRanges();
+    const found=selectedRanges(st);
     if(!found.length)return;
     const arr=T.hl[id]=T.hl[id]||[];
     found.forEach(f=>addRange(arr,...f));
@@ -926,7 +969,12 @@ const A={
   home(){T=null;draw()},
   open(b){const t=H.tests.find(x=>x.id===b.dataset.id);if(!t)return;T=JSON.parse(JSON.stringify(t));T.phase='results';T.sum=t.sum;draw()},
   reset(){if(confirm('Delete all saved test history? Every question will count as unseen again.')){H={tests:[],seen:{},n:0};saveH();clearCur();draw()}},
-  pick(b){if(b.classList.contains('static'))return;setPick(b.dataset.v)},
+  pick(b){
+    if(b.classList.contains('static'))return;
+    const s=getSelection();                       // selecting text inside a choice must not pick it
+    if(s&&!s.isCollapsed&&b.contains(s.anchorNode)&&b.contains(s.focusNode))return;
+    setPick(b.dataset.v);
+  },
   x(b){
     const id=T.plan[T.mod][T.idx];T.el[id]=T.el[id]||{};
     T.el[id][b.dataset.v]=!T.el[id][b.dataset.v];
@@ -949,7 +997,7 @@ const A={
   exitnow(){closeModal();save();clearInterval(tickH);T=null;closeAll();draw()},
   mclose(){closeModal()},
   hidetime(){UI.timer=!UI.timer;drawTimer()},
-  hlmode(b){UI.hlMode=!UI.hlMode;b.classList.toggle('on',UI.hlMode);const s=$('#stem');if(s)s.classList.toggle('hl-on',UI.hlMode)},
+  hlmode(b){UI.hlMode=!UI.hlMode;b.classList.toggle('on',UI.hlMode);const s=$('#stem');if(s)s.classList.toggle('hl-on',UI.hlMode);const pr=$('#pr');if(pr)pr.classList.toggle('hl-on',UI.hlMode)},
   notes(){openNotes()},
   calc(){openCalc()},ref(){openRef()},ck(b){ckey(b.dataset.v)},
   submit(){
@@ -972,7 +1020,13 @@ document.addEventListener('click',e=>{
 });
 addEventListener('beforeunload',save);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePops();closeModal()}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closePops();closeModal()}
+  // answer choices are divs (so their text can be selected); keep them keyboard-operable
+  else if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('choice')&&e.target.dataset.a==='pick'){
+    e.preventDefault();A.pick(e.target);
+  }
+});
 
 /* ═════════════ boot ═════════════ */
 (function(){
