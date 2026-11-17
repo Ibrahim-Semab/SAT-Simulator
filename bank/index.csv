@@ -346,7 +346,7 @@ bbb0359a,Math,Algebra,Linear equations in two variables,Medium,Multiple choice,A
 a775af14,Math,Algebra,Linear functions,Medium,Multiple choice,C,Math Easy+Medium,358,358
 e0f59119,Math,Algebra,Linear equations in two variables,Medium,Student-produced response,"14.66, 14.67, 44/3",Math Easy+Medium,359,359
 dae126d7,Math,Algebra,Linear functions,Medium,Multiple choice,D,Math Easy+Medium,360,360
-bf5f80c6,Math,Algebra,Linear inequalities in one or two variables,Medium,Multiple choice,A,Math Easy+Medium,361,361
+bf5f80c6,Math,Algebra,Linear inequalities in one or two variables,Medium,Multiple choice,D,Math Easy+Medium,361,361
 c307283c,Math,Algebra,Linear equations in two variables,Medium,Multiple choice,C,Math Easy+Medium,362,362
 80da233d,Math,Algebra,Linear inequalities in one or two variables,Medium,Multiple choice,D,Math Easy+Medium,363,363
 271f7e3f,Math,Algebra,Linear functions,Medium,Multiple choice,B,Math Easy+Medium,364,364
@@ -367,7 +367,7 @@ d62ad380,Math,Algebra,Linear equations in two variables,Medium,Multiple choice,C
 23dedddd,Math,Algebra,Linear functions,Medium,Multiple choice,D,Math Easy+Medium,379,379
 a91a2b75,Math,Algebra,Linear functions,Medium,Student-produced response,9,Math Easy+Medium,380,380
 340afb12,Math,Algebra,Systems of two linear equations in two variables,Medium,Multiple choice,C,Math Easy+Medium,381,381
-4f669597,Math,Algebra,Linear equations in one variable,Medium,Student-produced response,1,Math Easy+Medium,382,382
+4f669597,Math,Algebra,Linear equations in one variable,Medium,Student-produced response,"1.2, 6/5",Math Easy+Medium,382,382
 431c3038,Math,Algebra,Linear equations in two variables,Medium,Multiple choice,D,Math Easy+Medium,383,383
 bd45df49,Math,Algebra,Systems of two linear equations in two variables,Medium,Multiple choice,D,Math Easy+Medium,384,384
 868fc236,Math,Algebra,Linear functions,Medium,Multiple choice,B,Math Easy+Medium,385,385
@@ -514,7 +514,7 @@ b4912cc5,Math,Problem-Solving and Data Analysis,"Ratios, rates, proportional rel
 37930b2a,Math,Problem-Solving and Data Analysis,Evaluating statistical claims: Observational studies and experiments,Medium,Multiple choice,A,Math Easy+Medium,534,534
 4c774b00,Math,Problem-Solving and Data Analysis,One-variable data: Distributions and measures of center and spread,Medium,Multiple choice,A,Math Easy+Medium,535,536
 e1ad3d41,Math,Problem-Solving and Data Analysis,Probability and conditional probability,Medium,Multiple choice,D,Math Easy+Medium,537,537
-8e528129,Math,Problem-Solving and Data Analysis,"Ratios, rates, proportional relationships, and units",Medium,Student-produced response,4,Math Easy+Medium,538,538
+8e528129,Math,Problem-Solving and Data Analysis,"Ratios, rates, proportional relationships, and units",Medium,Student-produced response,4.44,Math Easy+Medium,538,538
 3e1bd4e2,Math,Problem-Solving and Data Analysis,Inference from sample statistics and margin of error,Medium,Multiple choice,A,Math Easy+Medium,539,539
 53d97af5,Math,Problem-Solving and Data Analysis,Inference from sample statistics and margin of error,Medium,Multiple choice,D,Math Easy+Medium,540,540
 0301c5dc,Math,Problem-Solving and Data Analysis,Probability and conditional probability,Medium,Multiple choice,A,Math Easy+Medium,541,541
@@ -530,7 +530,7 @@ d73a67d7,Math,Problem-Solving and Data Analysis,One-variable data: Distributions
 fea831fc,Math,Problem-Solving and Data Analysis,"Ratios, rates, proportional relationships, and units",Medium,Student-produced response,"25.4, 127/5",Math Easy+Medium,552,552
 e03f3477,Math,Problem-Solving and Data Analysis,Inference from sample statistics and margin of error,Medium,Multiple choice,B,Math Easy+Medium,553,553
 f46139df,Math,Problem-Solving and Data Analysis,Two-variable data: Models and scatterplots,Medium,Multiple choice,C,Math Easy+Medium,554,554
-07f2829b,Math,Problem-Solving and Data Analysis,One-variable data: Distributions and measures of center and spread,Medium,Student-produced response,1,Math Easy+Medium,555,555
+07f2829b,Math,Problem-Solving and Data Analysis,One-variable data: Distributions and measures of center and spread,Medium,Student-produced response,1.3,Math Easy+Medium,555,555
 7ac5d686,Math,Problem-Solving and Data Analysis,Two-variable data: Models and scatterplots,Medium,Multiple choice,B,Math Easy+Medium,556,556
 181cc4d6,Math,Problem-Solving and Data Analysis,"Ratios, rates, proportional relationships, and units",Medium,Multiple choice,A,Math Easy+Medium,557,557
 578e26ae,Math,Problem-Solving and Data Analysis,One-variable data: Distributions and measures of center and spread,Medium,Multiple choice,A,Math Easy+Medium,558,558
@@ -693,7 +693,7 @@ e1248a5c,Math,Algebra,Systems of two linear equations in two variables,Hard,Mult
 5e9b6079,Math,Algebra,Systems of two linear equations in two variables,Hard,Multiple choice,C,Math Hard,38,38
 52cb8ea4,Math,Algebra,Systems of two linear equations in two variables,Hard,Multiple choice,B,Math Hard,39,39
 0b46bad5,Math,Algebra,Linear equations in two variables,Hard,Multiple choice,C,Math Hard,40,41
-c362c210,Math,Algebra,Linear equations in two variables,Hard,Student-produced response,1,Math Hard,42,42
+c362c210,Math,Algebra,Linear equations in two variables,Hard,Student-produced response,"1.5, 3/2",Math Hard,42,42
 94b48cbf,Math,Algebra,Linear equations in two variables,Hard,Multiple choice,D,Math Hard,43,43
 50f4cb9c,Math,Algebra,Linear functions,Hard,Multiple choice,D,Math Hard,44,44
 16889ef3,Math,Algebra,Linear functions,Hard,Multiple choice,C,Math Hard,45,45
@@ -894,7 +894,7 @@ da978ee6,Math,Problem-Solving and Data Analysis,Inference from sample statistics
 89f20d9e,Math,Problem-Solving and Data Analysis,Probability and conditional probability,Hard,Multiple choice,B,Math Hard,243,243
 79137c1b,Math,Problem-Solving and Data Analysis,Two-variable data: Models and scatterplots,Hard,Multiple choice,B,Math Hard,244,244
 a51e6f93,Math,Problem-Solving and Data Analysis,Percentages,Hard,Student-produced response,576,Math Hard,245,245
-54d93874,Math,Problem-Solving and Data Analysis,One-variable data: Distributions and measures of center and spread,Hard,Student-produced response,2,Math Hard,246,246
+54d93874,Math,Problem-Solving and Data Analysis,One-variable data: Distributions and measures of center and spread,Hard,Student-produced response,2.6,Math Hard,246,246
 af142f8d,Math,Problem-Solving and Data Analysis,Two-variable data: Models and scatterplots,Hard,Multiple choice,A,Math Hard,247,247
 8213b1b3,Math,Problem-Solving and Data Analysis,Percentages,Hard,Student-produced response,0014,Math Hard,248,248
 34f8cd89,Math,Problem-Solving and Data Analysis,Percentages,Hard,Multiple choice,C,Math Hard,249,249
@@ -988,7 +988,7 @@ acd30391,Math,Geometry and Trigonometry,Circles,Hard,Multiple choice,D,Math Hard
 6c67dd47,Math,Geometry and Trigonometry,Right triangles and trigonometry,Hard,Multiple choice,C,Math Hard,342,342
 27f1db42,Math,Geometry and Trigonometry,Circles,Hard,Student-produced response,49,Math Hard,343,343
 14e7c1f4,Math,Geometry and Trigonometry,Right triangles and trigonometry,Hard,Multiple choice,A,Math Hard,344,344
-6a3fbec3,Math,Geometry and Trigonometry,"Lines, angles, and triangles",Hard,Student-produced response,4,Math Hard,345,345
+6a3fbec3,Math,Geometry and Trigonometry,"Lines, angles, and triangles",Hard,Student-produced response,"4.5, 9/2",Math Hard,345,345
 c0b53183,Math,Geometry and Trigonometry,Circles,Hard,Student-produced response,39312,Math Hard,346,346
 459dd6c5,Math,Geometry and Trigonometry,Area and volume,Hard,Student-produced response,"135/8, 16.87, 16.88",Math Hard,347,347
 44d67c6c,Math,Geometry and Trigonometry,Circles,Hard,Student-produced response,-2,Math Hard,348,348
