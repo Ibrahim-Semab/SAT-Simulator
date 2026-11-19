@@ -188,12 +188,38 @@ def build_blocks(entries, page, mdir, fdir, page_entries=None, want_figs=True):
     gone = {id(e) for fg in figs for e in fg['labels']}
     rest = [e for e in entries if id(e) not in gone and not any(in_box(e, fg['core']) for fg in figs)]
     # bullets (small dots) and underlines (thin horizontal rules under text)
+    # A small drawn shape is a list bullet only if it stands alone in the draw order (a real bullet is drawn by itself
+    # between two text runs) AND no text sits to its left on the same line. Small glyphs inside an equation
+    # (a minus sign, a small x, a dot) are drawn next to other shapes and must stay part of the equation picture.
+    def twin(a, b):   # the PDF draws most shapes twice (fill + stroke) with bounds that differ by a hair
+        return a[0] == 'm' and b[0] == 'm' and all(abs(a[k] - b[k]) < 0.1 for k in (1, 2, 3, 4))
+    def lone(i):
+        lo = i
+        while lo > 0 and twin(rest[lo - 1], rest[i]): lo -= 1
+        hi = i
+        while hi + 1 < len(rest) and twin(rest[hi + 1], rest[i]): hi += 1
+        return not (lo > 0 and rest[lo - 1][0] == 'm') and not (hi + 1 < len(rest) and rest[hi + 1][0] == 'm')
+    def is_bullet(i, e):
+        if not lone(i): return False
+        base = (e[2] + e[4]) / 2 + 3.5
+        return not any(t[0] == 't' and t[1].strip() and abs(t[3] - base) <= 6 and t[4] <= e[1] + 1 for t in rest)
+    def under_text(e):   # an underline lies just below a text run (it may be split into pieces, so any overlap counts)
+        cy = (e[2] + e[4]) / 2
+        return any(t[0] == 't' and t[1].strip() and min(e[3], t[4]) - max(e[1], t[2]) > 0 and -1.5 <= cy - t[3] <= 4.5 for t in rest)
+    def glyph_neighbour(i):   # drawn right next to a glyph shape (digit, letter...) in the same run = part of an equation
+        lo = i
+        while lo > 0 and twin(rest[lo - 1], rest[i]): lo -= 1
+        hi = i
+        while hi + 1 < len(rest) and twin(rest[hi + 1], rest[i]): hi += 1
+        return any(0 <= j < len(rest) and rest[j][0] == 'm' and rest[j][4] - rest[j][2] > 1.6 for j in (lo - 1, hi + 1))
     bullets, rules, keep = [], [], []
-    for e in rest:
+    for i, e in enumerate(rest):
         if e[0] == 'm' and e[5] == 'p':
             w, h = e[3] - e[1], e[4] - e[2]
-            if w <= 4.5 and h <= 4.5: bullets.append(e); continue
-            if h <= 1.6 and w >= 6: rules.append(e); continue
+            if w <= 4.5 and h <= 4.5 and is_bullet(i, e): bullets.append(e); continue
+            # a thin shape is an underline only when it lies under a text run; otherwise it belongs to an equation
+            # (a minus sign, a fraction bar)
+            if h <= 1.6 and (under_text(e) or (not glyph_neighbour(i) and (w >= 6 or lone(i)))): rules.append(e); continue
         keep.append(e)
     rules.sort(key=lambda r: (round(r[2]), r[1])); mr = []
     for r in rules:
