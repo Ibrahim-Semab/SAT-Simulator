@@ -138,15 +138,17 @@
       pageList(page, n).map(p => p === '…' ? '<span class="adv-gap">…</span>' : btn(p, p, p === page, false, 'Page ' + p)).join('') +
       btn('›', page + 1, false, page >= n, 'Next page') + '</div>';
   }
-  function domainStats(rows) {
+  // Weakest topics are question types (the official "skills"), not the four broad domains.
+  function typeStats(rows) {
     const map = new Map();
     rows.forEach(r => {
-      const key = r.q.d || 'Other';
-      if (!map.has(key)) map.set(key, { name: key, total: 0, correct: 0 });
+      const name = r.q.k || r.q.d || 'Other';
+      const key = skKey(name) || 'other';
+      if (!map.has(key)) map.set(key, { name, total: 0, correct: 0 });
       const d = map.get(key);
       d.total++; d.correct += r.correct ? 1 : 0;
     });
-    return [...map.values()].sort((a, b) => (a.correct / a.total) - (b.correct / b.total) || a.name.localeCompare(b.name));
+    return [...map.values()].sort((a, b) => (a.correct / a.total) - (b.correct / b.total) || b.total - a.total || a.name.localeCompare(b.name));
   }
   const pct = (n, t) => (t ? Math.round(100 * n / t) : 0) + '%';
   const tone = p => p >= 75 ? 'good' : p >= 50 ? 'mid' : 'bad';
@@ -183,7 +185,7 @@
       }).join('') + '</div></div>';
   }
   function topicBars(rows) {
-    return domainStats(rows).map(d => {
+    return typeStats(rows).map(d => {
       const p = Math.round(100 * d.correct / d.total);
       return '<div class="adv-topic"><div class="adv-topic-head"><span>' + esc(d.name) + '</span><b>' + d.correct + '/' +
         d.total + '</b></div><div class="adv-track"><i class="' + tone(p) + '" style="width:' + p + '%"></i></div></div>';
@@ -194,7 +196,7 @@
     return '<section class="adv-card"><h2>' + name + '</h2>' + scoreRow('Score', sec) +
       '<div class="adv-acc"><span>Accuracy</span><b>' + pct(rows.filter(r => r.correct).length, rows.length) + '</b><small>' + rows.filter(r => r.correct).length + ' of ' + rows.length + ' correct</small></div>' +
       '<div class="adv-sub">Modules</div>' + modulesFor(subject).map(moduleStrip).join('') +
-      '<div class="adv-sub">Topics · weakest first</div>' + topicBars(rows) + '</section>';
+      '<div class="adv-sub">Question types · weakest first</div>' + topicBars(rows) + '</section>';
   }
   // Pace: which skills eat more time than the official per-question budget.
   function timeCard(subject, name) {
@@ -254,6 +256,20 @@
       '</div></div><div class="ribbon"></div>';
     layout();
   }
+
+  // Question review screen: show how long the student spent on the question.
+  const baseQReview = drawQReview;
+  drawQReview = function (app) {
+    const out = baseQReview.apply(this, arguments);
+    const info = app.querySelector('.rv .info');
+    if (info && UI.view) {
+      const id = T.plan[UI.view.k] && T.plan[UI.view.k][UI.view.i];
+      const rec = T.timeSpentByQuestion;
+      const label = !rec ? 'Time not recorded' : 'Time taken ' + fmt(rec[id] || 0);
+      info.insertAdjacentHTML('beforeend', '<span class="chip adv-qrtime" title="Time spent on this question">' + ICON.clock + ' ' + label + '</span>');
+    }
+    return out;
+  };
 
   drawResults = drawAdvancedResults;
   A.advFilter = b => { UI.advFilter = b.dataset.v; UI.advPage = 1; drawResults($('#app')); };
@@ -361,6 +377,7 @@
     .adv-page:hover:not(:disabled):not(.on){background:var(--bar)}
     .adv-page.on{background:var(--accent);border-color:var(--accent);color:#fff}
     .adv-page:disabled{opacity:.35;cursor:default}.adv-gap{color:var(--ink2);padding:0 2px}
+    .adv-qrtime{display:inline-flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums}.adv-qrtime svg{width:14px;height:14px}
     .adv-empty{margin:18px 0 6px;font-size:14px;color:var(--ink2)}
     @media(max-width:760px){.adv-hero{flex-direction:column;align-items:flex-start;gap:16px;padding:18px}.adv-cols{grid-template-columns:1fr}.adv-card{padding:16px}}
   `;
