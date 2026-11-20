@@ -184,8 +184,11 @@
           '" data-i="' + i + '" aria-label="Review question ' + (i + 1) + '">' + (i + 1) + '</button>';
       }).join('') + '</div></div>';
   }
+  // Weakest topics list only question types with at least one miss; perfect ones (1/1, 2/2, ...) are left out.
   function topicBars(rows) {
-    return typeStats(rows).map(d => {
+    const weak = typeStats(rows).filter(d => d.correct < d.total);
+    if (!weak.length) return '<p class="adv-empty">No weak spots. Every question type was answered correctly.</p>';
+    return weak.map(d => {
       const p = Math.round(100 * d.correct / d.total);
       return '<div class="adv-topic"><div class="adv-topic-head"><span>' + esc(d.name) + '</span><b>' + d.correct + '/' +
         d.total + '</b></div><div class="adv-track"><i class="' + tone(p) + '" style="width:' + p + '%"></i></div></div>';
@@ -244,7 +247,7 @@
       (shown.length ? '<div class="adv-question-list">' + slice.map(r =>
         '<button class="adv-question" data-a="advOpen" data-k="' + r.k + '" data-i="' + r.i + '">' +
         '<span class="adv-dot ' + r.status + '"></span><span class="adv-qnum">' + (MODS[r.k].s === 'rw' ? 'R&amp;W ' : 'Math ') +
-        MODS[r.k].num + '.' + (r.i + 1) + '</span><span class="adv-qmain">' + esc(r.q.d) + '</span><span class="adv-lvl ' +
+        MODS[r.k].num + '.' + (r.i + 1) + '</span><span class="adv-qmain">' + esc(r.q.k || r.q.d) + '</span><span class="adv-lvl ' +
         r.q.l + '" title="' + (LEVEL[r.q.l] || '') + '">' + (LEVEL[r.q.l] || '').charAt(0) + '</span><span class="adv-qtime">' +
         (r.seconds ? fmt(r.seconds) : '') + '</span></button>').join('') + '</div>' +
         '<div class="adv-foot"><div class="adv-size"><span>Show</span>' + SIZES.map(n =>
