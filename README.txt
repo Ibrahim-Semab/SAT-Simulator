@@ -40,3 +40,8 @@ Question quality check
   bank/q (tiny, out of bounds, blank, answer start cut off, answer end cut off) and exits 1 if anything is wrong.
   Run it after regenerating the bank.
 * bank/excluded.json holds questions kept out of tests because their source screenshot is itself incomplete.
+* python3 tools/fix_bank.py [--apply] repairs figure questions that the text pipeline split into pieces: pictures that are
+  only a copy or fragment of another picture in the same question are dropped, and questions that cannot be repaired
+  without the source PDF (detached labels or axis titles, two different crops of one figure, "Math output error")
+  are moved to bank/excluded.json with the reason. tools/audit_bank.py runs the same checks, so run it after
+  regenerating the bank. Rebuilding the bank from the PDFs will bring these questions back, and the audit will flag them again.

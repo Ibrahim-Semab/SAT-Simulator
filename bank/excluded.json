@@ -47,5 +47,519 @@
     ]
    ]
   }
+ },
+ {
+  "id": "0ea7ef01",
+  "reason": "rotated axis title detached from the figure: d5096efd1980 (63x528 px)",
+  "entry": {
+   "id": "0ea7ef01",
+   "s": "math",
+   "a": "C",
+   "d": "Algebra",
+   "k": "Linear functions",
+   "l": "E",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 88,
+   "ep": 89,
+   "P": [
+    "Oxygen gas is placed inside a tank with a constant volume. The graph shows the estimated temperature ⟦i:ac044705ef4d:0.885:-0.339⟧, in kelvins, of the oxygen gas when its pressure is ⟦i:0d6eb97257be:0.651:-0.104⟧ atmospheres.",
+    "⟦f:90c28df57afd:27.422:25.365⟧",
+    "⟦i:d5096efd1980:13.75:-0.394⟧",
+    "⟦i:bc1e46541005:1.641:-0.393⟧",
+    "What is the estimated temperature, in kelvins, of the oxygen gas when its pressure is ⟦i:7a3b61e6ddb3:0.911:-0.052⟧ atmospheres?"
+   ],
+   "o": [
+    "⟦i:48fd2170194d:0.911:-0.375⟧",
+    "⟦i:e42dd06a8508:0.911:-0.375⟧",
+    "⟦i:e0dfa1b6bb19:0.938:-0.39⟧",
+    "⟦i:9aa362b698cf:0.938:-0.39⟧"
+   ]
+  }
+ },
+ {
+  "id": "79340403",
+  "reason": "bar chart y-axis numbers cut off; their digits sit in a separate crop; rotated axis title detached from the figure: 6802100cefac (119x537 px)",
+  "entry": {
+   "id": "79340403",
+   "s": "math",
+   "a": "30",
+   "d": "Problem-Solving and Data Analysis",
+   "k": "One-variable data: Distributions and measures of center and spread",
+   "l": "E",
+   "m": "SPR",
+   "src": "Math Easy+Medium",
+   "p": 241,
+   "ep": 241,
+   "P": [
+    "⟦f:5b87cc30cde6:28.802:17.76⟧",
+    "⟦i:6802100cefac:13.984:-0.398⟧",
+    "⟦i:88a313ba459e:1.51:-0.373⟧",
+    "The bar graph shows the distribution of ⟦i:d5d4345771ac:0.911:-0.052⟧ books collected by ⟦i:fd4e2b9509ad:0.911:-0.13⟧ different groups for a book drive. How many books were collected by group ⟦i:cbe6ac167c8e:0.885:-0.104⟧?"
+   ]
+  }
+ },
+ {
+  "id": "9d078710",
+  "reason": "second crop of the figure with labels the first lacks: 897435c3b041 (613x581 px)",
+  "entry": {
+   "id": "9d078710",
+   "s": "math",
+   "a": "A",
+   "d": "Geometry and Trigonometry",
+   "k": "Lines, angles, and triangles",
+   "l": "E",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 274,
+   "ep": 274,
+   "P": [
+    "⟦i:003db372ccad:25.365:-0.377⟧",
+    "⟦f:897435c3b041:21.276:20.182⟧",
+    "In the figure shown, line ⟦i:cc6df49bc3b0:0.938:-0.078⟧ intersects lines ⟦i:d906c0ca3ac0:1.12:-0.339⟧ and ⟦i:363b2bce6935:0.938:-0.078⟧. Which additional piece of information is sufficient to prove that lines ⟦i:71ef98692e04:1.12:-0.339⟧ and ⟦i:93a59d98fda3:0.938:-0.078⟧ are parallel?"
+   ],
+   "o": [
+    "⟦i:456b864b9321:0.938:-0.389⟧",
+    "⟦i:171f974935e0:0.938:-0.389⟧",
+    "⟦i:21c6295f0c5b:1.146:-0.392⟧",
+    "⟦i:ebab57f45fcf:0.938:-0.389⟧"
+   ]
+  }
+ },
+ {
+  "id": "4a141e77",
+  "reason": "second crop of the figure with labels the first lacks: 0a56d2f8958f (613x622 px)",
+  "entry": {
+   "id": "4a141e77",
+   "s": "math",
+   "a": "B",
+   "d": "Geometry and Trigonometry",
+   "k": "Lines, angles, and triangles",
+   "l": "E",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 283,
+   "ep": 283,
+   "P": [
+    "⟦f:0a56d2f8958f:21.276:21.589⟧",
+    "⟦i:571f6b9520da:17.734:-0.391⟧",
+    "In the figure, line ⟦i:7ab61e719be6:0.859:-0.312⟧ is parallel to line ⟦i:d1204331e0b8:0.651:-0.104⟧, and line ⟦i:f1827f03f550:0.859:-0.078⟧ intersects both lines. What is the value of ⟦i:58fb337b6097:0.651:-0.104⟧?"
+   ],
+   "o": [
+    "⟦i:7df7841960d1:0.911:-0.375⟧",
+    "⟦i:946e44f9a433:0.938:-0.39⟧",
+    "⟦i:cd2f53973470:0.911:-0.374⟧",
+    "⟦i:21c52b67d428:0.911:-0.374⟧"
+   ]
+  }
+ },
+ {
+  "id": "58687a66",
+  "reason": "second crop of the figure with labels the first lacks: 6613323a095a (613x581 px); source text contains \"Math output error\"",
+  "entry": {
+   "id": "58687a66",
+   "s": "math",
+   "a": "175",
+   "d": "Geometry and Trigonometry",
+   "k": "Lines, angles, and triangles",
+   "l": "E",
+   "m": "SPR",
+   "src": "Math Easy+Medium",
+   "p": 284,
+   "ep": 284,
+   "P": [
+    "⟦i:0ba1e7f0b911:25.365:-0.377⟧",
+    "⟦f:6613323a095a:21.276:20.182⟧",
+    "In the figure shown, line ⟦i:29ac81d6ab58:0.885:-0.339⟧ is parallel to line ⟦i:f5189b738e5b:0.938:-0.078⟧. Line ⟦i:18cfe84b299f:1.25:-0.312⟧ Math output error intersects both lines. What is the value of ⟦i:43ed820bceb0:0.651:-0.104⟧?"
+   ]
+  }
+ },
+ {
+  "id": "3b4b5b1e",
+  "reason": "second crop of the figure with labels the first lacks: cb819b2c1abb (520x503 px)",
+  "entry": {
+   "id": "3b4b5b1e",
+   "s": "math",
+   "a": "47",
+   "d": "Geometry and Trigonometry",
+   "k": "Lines, angles, and triangles",
+   "l": "E",
+   "m": "SPR",
+   "src": "Math Easy+Medium",
+   "p": 297,
+   "ep": 297,
+   "P": [
+    "⟦f:cb819b2c1abb:18.047:17.474⟧",
+    "⟦i:16b0af90bc04:15.365:-0.395⟧",
+    "In the figure, line ⟦i:0b24c15a66ac:1.12:-0.339⟧ is parallel to line ⟦i:e509ea224d35:0.938:-0.078⟧. What is the value of ⟦i:2629068b11c4:0.651:-0.104⟧?"
+   ]
+  }
+ },
+ {
+  "id": "cab8f907",
+  "reason": "label detached from the figure: a89795712a3e (40x55 px)",
+  "entry": {
+   "id": "cab8f907",
+   "s": "math",
+   "a": "A",
+   "d": "Geometry and Trigonometry",
+   "k": "Area and volume",
+   "l": "E",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 298,
+   "ep": 298,
+   "P": [
+    "⟦i:eb81cb5a4425:18.568:-0.386⟧",
+    "⟦i:a89795712a3e:1.432:-0.395⟧",
+    "⟦i:383142788162:1.484:-0.396⟧",
+    "The figure shows the lengths, in units, of two sides of a triangle. What is the area, in square units, of the triangle?"
+   ],
+   "o": [
+    "⟦i:d0d602c6c61d:0.911:-0.375⟧",
+    "⟦i:30f275be96d8:0.911:-0.375⟧",
+    "⟦i:cce0847307c0:0.911:-0.375⟧",
+    "⟦i:d8aba4e66c7f:0.911:-0.388⟧"
+   ]
+  }
+ },
+ {
+  "id": "de9148c4",
+  "reason": "label detached from the figure: e4ea64978269 (34x56 px)",
+  "entry": {
+   "id": "de9148c4",
+   "s": "math",
+   "a": "C",
+   "d": "Geometry and Trigonometry",
+   "k": "Right triangles and trigonometry",
+   "l": "E",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 301,
+   "ep": 301,
+   "P": [
+    "⟦i:9971171d7c35:19.349:-0.373⟧",
+    "⟦i:cbc5e1ed0882:11.12:-0.374⟧",
+    "⟦i:e4ea64978269:1.458:-0.387⟧",
+    "Which equation shows the relationship between the side lengths of the triangle shown?"
+   ],
+   "o": [
+    "⟦i:abc54babd3ef:0.938:-0.384⟧",
+    "⟦i:ed272c83e195:1.016:-0.395⟧",
+    "⟦i:1af3ab5743d7:1.172:-0.379⟧",
+    "⟦i:3c82d8ea0571:1.198:-0.395⟧"
+   ]
+  }
+ },
+ {
+  "id": "36661021",
+  "reason": "label detached from the figure: 659dabad16a3 (37x56 px)",
+  "entry": {
+   "id": "36661021",
+   "s": "math",
+   "a": "B",
+   "d": "Geometry and Trigonometry",
+   "k": "Right triangles and trigonometry",
+   "l": "E",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 302,
+   "ep": 302,
+   "P": [
+    "⟦i:8869b19d574a:17.969:-0.378⟧",
+    "⟦i:0d9b29d0cb12:10.755:-0.388⟧",
+    "⟦i:659dabad16a3:1.458:-0.379⟧",
+    "In the right triangle shown, which of the following is closest to the value of ⟦i:469bc16feb51:0.651:-0.104⟧?"
+   ],
+   "o": [
+    "⟦i:26974fcc7678:0.938:-0.39⟧",
+    "⟦i:7a5ab29d2640:0.911:-0.374⟧",
+    "⟦i:835eac70ccfc:0.911:-0.375⟧",
+    "⟦i:c88eae6e9329:0.911:-0.374⟧"
+   ]
+  }
+ },
+ {
+  "id": "d21270da",
+  "reason": "second crop of the figure with labels the first lacks: 8401263d0b2b (613x622 px)",
+  "entry": {
+   "id": "d21270da",
+   "s": "math",
+   "a": "B",
+   "d": "Geometry and Trigonometry",
+   "k": "Lines, angles, and triangles",
+   "l": "E",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 303,
+   "ep": 303,
+   "P": [
+    "⟦f:8401263d0b2b:21.276:21.589⟧",
+    "⟦i:3d1dec44d46d:17.734:-0.391⟧",
+    "In the figure, line ⟦i:4d22877d7685:0.859:-0.078⟧ intersects lines ⟦i:b93e074dd475:0.651:-0.104⟧ and ⟦i:db1b5ccb478a:0.651:-0.104⟧. Which additional piece of information is sufficient to prove that lines ⟦i:3dcec2340795:0.651:-0.104⟧ and ⟦i:3f3082fdcbc2:0.651:-0.104⟧ are parallel?"
+   ],
+   "o": [
+    "⟦i:1fec4a1e30f2:0.964:-0.378⟧",
+    "⟦i:4749069c71be:0.911:-0.374⟧",
+    "⟦i:34979c87c687:0.964:-0.383⟧",
+    "⟦i:7628cd8e032a:0.938:-0.384⟧"
+   ]
+  }
+ },
+ {
+  "id": "25fc031a",
+  "reason": "second histogram is clipped; its axis labels sit in loose crops",
+  "entry": {
+   "id": "25fc031a",
+   "s": "math",
+   "a": "A",
+   "d": "Problem-Solving and Data Analysis",
+   "k": "One-variable data: Distributions and measures of center and spread",
+   "l": "M",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 613,
+   "ep": 614,
+   "P": [
+    "⟦i:170987324b58:28.62:-0.391⟧",
+    "⟦f:cf5f4a093e1b:17.005:11.302⟧",
+    "⟦i:9084087ae1b0:6.615:-0.392⟧",
+    "⟦i:a3b3037e622a:1.276:-0.384⟧",
+    "⟦i:923ff4cf2bb2:1.224:-0.394⟧",
+    "⟦i:c550c9fa7ae6:6.589:-0.382⟧",
+    "⟦f:4b463852a409:17.005:11.302⟧",
+    "The histograms summarize the distributions of number of units sold, in thousands, for company A and company B. Which statement best compares the standard deviations of number of units sold for these companies?"
+   ],
+   "o": [
+    "The standard deviation of number of units sold for company A is less than the standard deviation of number of units sold for company B.",
+    "The standard deviation of number of units sold for company A is greater than the standard deviation of number of units sold for company B.",
+    "The standard deviation of number of units sold for company A is equal to the standard deviation of number of units sold for company B.",
+    "There is not enough information to compare the standard deviations."
+   ]
+  }
+ },
+ {
+  "id": "ecc98c87",
+  "reason": "label detached from the figure: b7ff726bb398 (30x42 px); second crop of the figure with labels the first lacks: 62aa255378d2 (585x609 px)",
+  "entry": {
+   "id": "ecc98c87",
+   "s": "math",
+   "a": "B",
+   "d": "Geometry and Trigonometry",
+   "k": "Lines, angles, and triangles",
+   "l": "M",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 618,
+   "ep": 619,
+   "P": [
+    "⟦i:0de493e24875:25.833:-0.394⟧",
+    "⟦i:b7ff726bb398:1.094:-0.375⟧",
+    "⟦f:62aa255378d2:20.312:21.146⟧",
+    "In the figure shown, line ⟦i:c64d33c1c410:0.938:-0.078⟧ intersects lines ⟦i:b93e074dd475:0.651:-0.104⟧ and ⟦i:a93e2087d4d4:0.651:-0.104⟧. If ⟦i:e3c979c52cf5:0.938:-0.078⟧, which additional piece of information is sufficient to prove that lines ⟦i:e7a1ba46d80a:0.651:-0.104⟧ and ⟦i:0427cd20ab4a:0.651:-0.104⟧ are parallel?"
+   ],
+   "o": [
+    "⟦i:4119fe7ae9e4:0.911:-0.374⟧",
+    "⟦i:2adab3b38f51:1.146:-0.392⟧",
+    "⟦i:4e1336d3322f:1.12:-0.378⟧",
+    "⟦i:252fcf19e74e:1.12:-0.378⟧"
+   ]
+  }
+ },
+ {
+  "id": "659cb706",
+  "reason": "label detached from the figure: e1680b5c87a4 (72x55 px)",
+  "entry": {
+   "id": "659cb706",
+   "s": "math",
+   "a": "D",
+   "d": "Geometry and Trigonometry",
+   "k": "Right triangles and trigonometry",
+   "l": "M",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 621,
+   "ep": 621,
+   "P": [
+    "⟦i:b8818b4ccf56:0.964:-0.376⟧",
+    "⟦i:39ec09262a0e:17.969:-0.378⟧",
+    "⟦i:e1680b5c87a4:1.432:-0.38⟧",
+    "⟦i:acceda8bc719:0.964:-0.373⟧",
+    "⟦i:2c7b00ea1038:1.458:-0.38⟧",
+    "Triangle ⟦i:e838891c5f39:0.911:-0.13⟧ shown is a right triangle. Which of the following has the same value as ⟦i:f77d0420e769:0.938:-0.156⟧?"
+   ],
+   "o": [
+    "⟦i:2c1c6190950d:0.938:-0.394⟧",
+    "⟦i:b0ecdcfa30fa:0.938:-0.394⟧",
+    "⟦i:5b4cb4ee279b:0.938:-0.394⟧",
+    "⟦i:017f4585ebd1:0.938:-0.394⟧"
+   ]
+  }
+ },
+ {
+  "id": "de550be0",
+  "reason": "label detached from the figure: 629eb9564a35 (37x57 px)",
+  "entry": {
+   "id": "de550be0",
+   "s": "math",
+   "a": "A",
+   "d": "Geometry and Trigonometry",
+   "k": "Right triangles and trigonometry",
+   "l": "M",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 649,
+   "ep": 649,
+   "P": [
+    "⟦i:0bfeaf9ed643:18.568:-0.386⟧",
+    "⟦i:864999fd7034:11.536:-0.374⟧",
+    "⟦i:629eb9564a35:1.484:-0.398⟧",
+    "For the triangle shown, which expression represents the value of ⟦i:554ec7aee18f:0.651:-0.104⟧?"
+   ],
+   "o": [
+    "⟦i:7b4cb3a2c098:1.51:-0.384⟧",
+    "⟦i:1060cc523214:1.12:-0.385⟧",
+    "⟦i:e42096f56d80:1.276:-0.375⟧",
+    "⟦i:5953cc3dff65:0.938:-0.384⟧"
+   ]
+  }
+ },
+ {
+  "id": "e9c5bfb2",
+  "reason": "side labels of the rectangles are cut off and sit in a loose crop",
+  "entry": {
+   "id": "e9c5bfb2",
+   "s": "math",
+   "a": "B",
+   "d": "Geometry and Trigonometry",
+   "k": "Area and volume",
+   "l": "M",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 659,
+   "ep": 659,
+   "P": [
+    "⟦i:f5f93d055ea6:10.078:-0.384⟧",
+    "⟦i:7f7013d572d2:1.172:-0.392⟧",
+    "⟦i:57146972a2ed:2.448:-0.394⟧",
+    "⟦i:bbd51618fdd9:1.12:-0.376⟧",
+    "⟦i:0e1caaf32f1f:1.562:-0.394⟧",
+    "Rectangles ⟦i:dc584e50ef7f:0.99:-0.052⟧ and ⟦i:2e8ca5a802df:1.172:-0.234⟧ shown are similar, where ⟦i:89970c7bd130:0.964:-0.026⟧, ⟦i:5825da837478:0.911:-0.052⟧, ⟦i:484311fce9da:0.964:-0.026⟧, and ⟦i:41652e09bb10:0.911:-0.052⟧ correspond to ⟦i:9b47fb4fc782:1.172:-0.234⟧, ⟦i:2518205c97aa:0.938:-0.078⟧, ⟦i:275536643880:0.964:-0.026⟧, and ⟦i:77c6dd1fccff:0.911:-0.052⟧, respectively. What is the length, in inches ⟦i:a6abc69ba640:1.276:-0.355⟧, of ⟦i:dd1d6f996b71:1.12:-0.069⟧ ?"
+   ],
+   "o": [
+    "⟦i:b25438106796:0.911:-0.375⟧",
+    "⟦i:b5839df42156:0.911:-0.386⟧",
+    "⟦i:4cea52baa6d9:0.938:-0.39⟧",
+    "⟦i:0635b6c2d301:0.911:-0.375⟧"
+   ]
+  }
+ },
+ {
+  "id": "0013adbd",
+  "reason": "second crop of the figure with labels the first lacks: 3fc141241f20 (613x622 px)",
+  "entry": {
+   "id": "0013adbd",
+   "s": "math",
+   "a": "A",
+   "d": "Geometry and Trigonometry",
+   "k": "Lines, angles, and triangles",
+   "l": "M",
+   "m": "MCQ",
+   "src": "Math Easy+Medium",
+   "p": 679,
+   "ep": 679,
+   "P": [
+    "⟦f:3fc141241f20:21.276:21.589⟧",
+    "⟦i:ad1dab1e302e:18.021:-0.391⟧",
+    "In the figure, line ⟦i:4d22877d7685:0.859:-0.078⟧ intersects lines ⟦i:d906c0ca3ac0:1.12:-0.339⟧ and ⟦i:ca55a5ac2a06:0.938:-0.078⟧. Which additional piece of information is sufficient to prove that lines ⟦i:71ef98692e04:1.12:-0.339⟧ and ⟦i:6c76b459a55f:0.938:-0.078⟧ are parallel?"
+   ],
+   "o": [
+    "⟦i:6c44db071f52:0.938:-0.389⟧",
+    "⟦i:8b8184240708:1.146:-0.392⟧",
+    "⟦i:da31d98d7901:0.938:-0.389⟧",
+    "⟦i:6f41c7f33934:0.938:-0.389⟧"
+   ]
+  }
+ },
+ {
+  "id": "d3b9c8d8",
+  "reason": "box plot: group labels and a second axis are loose crops, so boxes cannot be matched to groups",
+  "entry": {
+   "id": "d3b9c8d8",
+   "s": "math",
+   "a": "C",
+   "d": "Problem-Solving and Data Analysis",
+   "k": "One-variable data: Distributions and measures of center and spread",
+   "l": "H",
+   "m": "MCQ",
+   "src": "Math Hard",
+   "p": 193,
+   "ep": 193,
+   "P": [
+    "⟦i:f1719bf07dd8:9.896:-0.379⟧",
+    "⟦i:e70205b65cdd:1.51:-0.394⟧",
+    "⟦i:0a4efe0385c2:1.51:-0.391⟧",
+    "⟦i:9e015480dc43:2.552:-0.392⟧",
+    "The box plots summarize the masses, in kilograms, of two groups of gazelles. Based on the box plots, which of the following statements must be true?"
+   ],
+   "o": [
+    "The mean mass of group 1 is greater than the mean mass of group 2.",
+    "The mean mass of group 1 is less than the mean mass of group 2.",
+    "The median mass of group 1 is greater than the median mass of group 2.",
+    "The median mass of group 1 is less than the median mass of group 2."
+   ]
+  }
+ },
+ {
+  "id": "7b52985c",
+  "reason": "rotated axis title detached from the figure: 48f42b182766 (64x533 px)",
+  "entry": {
+   "id": "7b52985c",
+   "s": "math",
+   "a": "4.5, 9/2",
+   "d": "Problem-Solving and Data Analysis",
+   "k": "Two-variable data: Models and scatterplots",
+   "l": "H",
+   "m": "SPR",
+   "src": "Math Hard",
+   "p": 220,
+   "ep": 220,
+   "P": [
+    "The scatterplot shows the relationship between the length of time ⟦i:8b6dc7c7ac22:0.885:-0.339⟧, in hours, a certain bird spent in flight and the number of days after January ⟦i:1e11f878fa00:0.885:-0.026⟧, ⟦i:2e99c6af382f:0.651:-0.026⟧.",
+    "⟦f:75192b17efa6:25.573:25.365⟧",
+    "⟦i:48f42b182766:13.88:-0.378⟧",
+    "⟦i:05ef62af14d9:1.562:-0.374⟧",
+    "What is the average rate of change, in hours per day, of the length of time the bird spent in flight on January ⟦i:70473ca9f38a:0.911:-0.052⟧ to the length of time the bird spent in flight on January ⟦i:881b04eb9c4b:0.911:-0.13⟧?"
+   ]
+  }
+ },
+ {
+  "id": "858809e7",
+  "reason": "rotated axis title detached from the figure: 7e3d394962eb (28x531 px); source text contains \"Math output error\"",
+  "entry": {
+   "id": "858809e7",
+   "s": "math",
+   "a": "B",
+   "d": "Geometry and Trigonometry",
+   "k": "Lines, angles, and triangles",
+   "l": "H",
+   "m": "MCQ",
+   "src": "Math Hard",
+   "p": 320,
+   "ep": 321,
+   "P": [
+    "⟦f:b44b7a838a06:26.927:15.859⟧",
+    "⟦i:7e3d394962eb:13.828:-0.384⟧",
+    "⟦i:e80f3c01be94:1.562:-0.395⟧",
+    "In the figure, ⟦i:479deefbd572:1.146:-0.095⟧ and ⟦i:283bd32953e6:1.12:-0.069⟧ intersect at point ⟦i:9b358184b5fd:0.911:-0.069⟧, and line ⟦i:125c223d3a6c:1.25:-0.329⟧ Math output error is parallel to line ⟦i:4dec82c412e3:1.12:-0.339⟧. If ⟦i:e9ed82b4f855:0.964:-0.104⟧ and ⟦i:5a238c1a65a4:0.964:-0.104⟧, which of the following must be true?",
+    "I. ⟦i:f2c574606492:0.99:-0.156⟧ II. ⟦i:41448858a7c6:0.99:-0.052⟧ III. ⟦i:b062f86081f8:1.536:-0.443⟧"
+   ],
+   "o": [
+    "I only",
+    "II only",
+    "I and II",
+    "II and III"
+   ]
+  }
  }
 ]
