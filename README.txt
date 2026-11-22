@@ -9,8 +9,12 @@ Keep the "bank" folder next to it.
 * Reading and Writing follows the official blueprint: 27 questions per module, ordered by domain then skill
   (Craft and Structure, Information and Ideas, Standard English Conventions, Expression of Ideas), with
   ~28/26/26/20% across the two modules. Skill counts per module are set in QUOTA at the top of index.html.
-* Module 2 is chosen from your Module 1 result (16+ of 27 in Reading and Writing,
-  13+ of 22 in Math -> harder module).
+* Module 2 is chosen from your Module 1 result (22+ of 27 in Reading and Writing, about 80%,
+  16+ of 22 in Math, about 70% -> harder module). The easier module 2 caps the section score at 550.
+* Scoring is 3-parameter logistic item response theory: each question has its own difficulty, discrimination and
+  guessing floor (0.25 multiple choice, 0 student-produced response); ability is the maximum-likelihood estimate over
+  your whole answer pattern, mapped from theta (about -3 to +3) onto 200-800 and rounded to 10.
+* Each Math module holds about one third student-produced response and two thirds multiple choice.
 * To add questions: build a bigger bank folder with tools/build_bank.py
   (python3 tools/build_bank.py <source files> --out bank) and replace bank/.
 * Colours are CSS variables at the top of index.html (:root).

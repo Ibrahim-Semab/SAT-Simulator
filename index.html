@@ -312,7 +312,8 @@ const QUOTA={
 const skKey=x=>String(x||'').toLowerCase().replace(/[^a-z]/g,'');
 const DIFF={rw1:{E:9,M:9,H:9},rw2h:{E:2,M:8,H:17},rw2l:{E:15,M:9,H:3},
             m1:{E:7,M:8,H:7},m2h:{E:3,M:7,H:12},m2l:{E:12,M:7,H:3}};
-const THRESH={rw:16,math:13};      // module-1 correct answers needed for the harder module 2
+const THRESH={rw:22,math:16};      // module-1 correct answers needed for the harder module 2 (accuracy above ~80% R&W, ~70% Math)
+const EASY_CAP=550;                // an easier module 2 cannot score above ~550
 const BREAK_SECONDS=600;
 const BANK=window.BANK||[];
 const BYID={};BANK.forEach(q=>BYID[q.id]=q);
@@ -362,6 +363,11 @@ function genModule(subject,quota,diff,used){
     if(Array.isArray(qd))qd.forEach((n,si)=>{for(let i=0;i<n;i++)slots.push({d,k:SKILLS[subject][di][si]})});
     else for(let i=0;i<qd;i++)slots.push({d,k:null});
   });
+  // Math: about one third student-produced response, two thirds multiple choice.
+  if(subject==='math'){
+    const nSpr=Math.round(slots.length/3),ts=shuffle(slots.map((_,i)=>i<nSpr?'SPR':'MCQ'));
+    slots.forEach((sl,i)=>sl.t=ts[i]);
+  }
   const pool=BANK.filter(q=>q.s===subject&&!used.has(q.id));
   const chosen=new Set(),out=[];
   slots.forEach((slot,i)=>{
@@ -370,7 +376,7 @@ function genModule(subject,quota,diff,used){
     let best=null,bs=1e9;
     for(const q of pool){
       if(chosen.has(q.id))continue;
-      const sc=seenN(q.id)*100+(sk?(skKey(q.k)===sk?0:q.d===dom?1000:3000):(q.d===dom?0:40))+Math.abs('EMH'.indexOf(q.l)-want)*12+Math.random()*6;
+      const sc=seenN(q.id)*100+(sk?(skKey(q.k)===sk?0:q.d===dom?1000:3000):(q.d===dom?0:40))+Math.abs('EMH'.indexOf(q.l)-want)*12+(slot.t&&(q.m==='MCQ'?'MCQ':'SPR')!==slot.t?300:0)+Math.random()*6;
       if(sc<bs){bs=sc;best=q}
     }
     if(best){chosen.add(best.id);out.push(best)}
@@ -421,23 +427,38 @@ function isCorrect(q,v){
   return opts.some(a=>{const an=numVal(a);return an!==null&&Math.abs(n-an)<=Math.max(5e-5,Math.abs(an)*5e-5)});
 }
 const modCorrect=k=>(T.plan[k]||[]).reduce((n,id)=>n+(isCorrect(BYID[id],T.ans[id])?1:0),0);
-/* Scaled-score estimate: item response theory, as the official Digital SAT is scored. Every question is a 3PL item
-   (difficulty b by level, guessing floor for multiple choice); ability is the posterior mean given all answers, so a miss
-   on an easy question lowers it more than a miss on a hard one, and a hit on a hard question raises it more.
-   Estimate only - the real item parameters are not public. */
-const IRT={b:{E:-1.15,M:0.05,H:1.2},a:0.9,guess:0.2,priorSd:1,scale:90};
-function estScaled(items){
-  if(!items.length)return 200;
-  let num=0,den=0;
-  for(let th=-4;th<=4.0001;th+=0.05){
-    let ll=-0.5*th*th/(IRT.priorSd*IRT.priorSd);
-    for(const x of items){
-      const c=x.q.m==='MCQ'?IRT.guess:0,p=c+(1-c)/(1+Math.exp(-IRT.a*(th-IRT.b[x.q.l])));
-      ll+=Math.log(x.ok?p:1-p);
-    }
-    const w=Math.exp(ll);num+=w*th;den+=w;
+/* Scaled-score estimate: 3-parameter logistic item response theory, as the official Digital SAT is scored.
+   Every question is a 3PL item with its own difficulty b, discrimination a and pseudo-guessing floor c
+   (about 0.25 for 4-choice multiple choice, 0 for student-produced response). Ability theta is the maximum-likelihood
+   estimate over the whole right/wrong pattern, so a miss on an easy question lowers it more than a miss on a hard one.
+   Theta (roughly -3..+3) is mapped onto 200-800 and rounded to 10. Item parameters are fixed per question, so every
+   test is scored on the same calibrated scale. An easier module 2 cannot score above ~550. */
+const IRT={b:{E:-1.15,M:0.05,H:1.2},bSpread:0.35,a:1,aSpread:0.3,guess:0.25,thMin:-4,thMax:4,step:0.02,
+           scaleMid:500,scalePer:100,min:200,max:800};
+function hash01(id){let h=2166136261;const s=String(id);for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return ((h>>>0)%100000)/100000}
+const itemCache={};
+function itemParams(q){
+  if(itemCache[q.id])return itemCache[q.id];
+  const u=hash01(q.id),v=hash01(q.id+'a');
+  return itemCache[q.id]={b:IRT.b[q.l]+(u-0.5)*2*IRT.bSpread,a:IRT.a+(v-0.5)*2*IRT.aSpread,c:q.m==='MCQ'?IRT.guess:0};
+}
+function prob(th,p){return p.c+(1-p.c)/(1+Math.exp(-p.a*(th-p.b)))}
+function estTheta(items){
+  const ps=items.map(x=>({p:itemParams(x.q),ok:x.ok}));
+  let best=IRT.thMin,bl=-Infinity;
+  for(let th=IRT.thMin;th<=IRT.thMax+1e-9;th+=IRT.step){
+    let ll=0;
+    for(const x of ps){const p=prob(th,x.p);ll+=Math.log(x.ok?p:1-p)}
+    if(ll>bl+1e-12){bl=ll;best=th}
   }
-  return clamp(Math.round((500+IRT.scale*num/den)/10)*10,200,800);
+  return best;
+}
+function estScaled(items,route){
+  if(!items.length)return IRT.min;
+  const th=estTheta(items);
+  let sc=clamp(Math.round((IRT.scaleMid+IRT.scalePer*th)/10)*10,IRT.min,IRT.max);
+  if(route==='l')sc=Math.min(sc,EASY_CAP);
+  return sc;
 }
 function summarize(t){
   const S={};
