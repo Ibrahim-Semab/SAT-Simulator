@@ -68,3 +68,8 @@ Question quality check
   prints "Math output error" instead of a line name (58687a66, 858809e7), the text now says "line ℓ", the name the
   figure gives that line. One question (75a32330, answer choice D missing from its screenshot) is still excluded.
   Rebuilding the whole bank from the PDFs brings the broken figures back; run fix_bank.py and restore_figures.py again.
+* python3 tools/trim_inline_fragments.py [--apply] cuts stray neighbour characters (the comma or full stop after a formula,
+  half of the next letter) off the edges of small inline formula pictures in bank/m. It only removes a separate cluster of ink
+  at the edge that is smaller than the formula and sits on its baseline, and leaves exponents, subscripts, brackets and
+  inline diagrams alone. 157 pictures (about 126 questions) were trimmed; a few one-letter slivers (such as an "i" after an
+  overlined name) are still there because they cannot be told apart from real characters without the source page.
