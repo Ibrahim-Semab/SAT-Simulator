@@ -75,3 +75,12 @@ Question quality check
   at the edge that is smaller than the formula and sits on its baseline, and leaves exponents, subscripts, brackets and
   inline diagrams alone. 157 pictures (about 126 questions) were trimmed; a few one-letter slivers (such as an "i" after an
   overlined name) are still there because they cannot be told apart from real characters without the source page.
+
+Hard mode (start screen)
+------------------------
+A switch on the start screen makes the next test harder by giving less time. Difficulty runs from level 1 (official
+timing) to level 5; the switch uses level 2, which is 85% of the official time per module (Reading and Writing 27 minutes
+instead of 32, Math 30 instead of 35). Only the time changes: the questions, the module 2 routing, the 550 cap and the
+scoring are the official ones. The switch is remembered; a test in progress keeps the level it started with; results
+and the history list show "Hard". To change how hard the switch is, edit HARD_LEVEL or the LEVELS table (levels 3 to 5 are
+already defined: 75%, 65%, 55% of the official time) near the top of the script in index.html.

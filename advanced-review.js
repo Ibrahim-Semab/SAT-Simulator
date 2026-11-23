@@ -234,6 +234,7 @@
     const slice = shown.slice((page - 1) * size, page * size);
     app.innerHTML = '<div class="ribbon"></div><div class="center"><div class="res adv-res">' +
       '<h1>Practice Test ' + T.n + '</h1>' +
+      ((T.lvl || 1) > 1 ? '<div class="lvlnote">Hard mode \u00b7 level ' + T.lvl + ' of 5 \u00b7 ' + Math.round((1 - LEVELS[T.lvl].time) * 100) + '% less time per module</div>' : '') +
       '<section class="adv-hero">' + ringSVG(S.total, 400, 1600, 'Estimated total ' + S.total + ' out of 1600') +
       '<div class="adv-hero-main"><div class="adv-hero-l">Estimated score</div>' +
       '<div class="adv-hero-stats"><span><b class="g">' + right + '</b> correct</span><span><b class="r">' + wrong +

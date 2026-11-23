@@ -215,6 +215,14 @@ svg{display:block}
 .logo{width:42px;height:42px;border-radius:10px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:800;font-size:17px;letter-spacing:-.5px}
 .home h1{font-size:30px;margin:0;line-height:1.1}
 .home .sub{color:var(--ink2);font-size:14px;margin-top:3px}
+.hardrow{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:14px}
+.hardrow .meta{color:var(--ink2);font-size:12.5px;margin-top:3px;line-height:1.45}
+.hardrow .lvl{margin-left:8px;font-size:11.5px;font-weight:700;color:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:1px 8px}
+.sw{flex:none;width:44px;height:26px;border-radius:13px;border:0;background:var(--bar);position:relative;cursor:pointer;transition:background .15s;margin-top:1px}
+.sw i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:left .15s}
+.sw.on{background:var(--accent)}.sw.on i{left:21px}
+.sw:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lvlnote{display:inline-block;margin:6px 0 4px;font-size:12.5px;font-weight:600;color:var(--accent-d);background:var(--accent-s);border-radius:12px;padding:3px 12px}
 .startrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
 .cover{height:6px;background:var(--bar);border-radius:3px;overflow:hidden;margin:22px 0 6px}
 .cover i{display:block;height:100%;background:var(--accent)}
@@ -315,6 +323,12 @@ const DIFF={rw1:{E:9,M:9,H:9},rw2h:{E:2,M:8,H:17},rw2l:{E:15,M:9,H:3},
 const THRESH={rw:22,math:16};      // module-1 correct answers needed for the harder module 2 (accuracy above ~80% R&W, ~70% Math)
 const EASY_CAP=550;                // an easier module 2 cannot score above ~550
 const BREAK_SECONDS=600;
+/* Difficulty levels 1-5. A level changes ONLY the time allowed per module (a fraction of the official time):
+   the questions, the module 2 routing and the scoring are always the official ones. Level 1 = official timing.
+   The Hard switch on the start screen uses HARD_LEVEL. */
+const LEVELS={1:{name:'Official',time:1},2:{name:'Hard',time:0.85},3:{name:'Harder',time:0.75},4:{name:'Very hard',time:0.65},5:{name:'Extreme',time:0.55}};
+const HARD_LEVEL=2;
+const modMinutes=(key,lvl)=>Math.round(MODS[key].min*LEVELS[lvl||1].time);
 const BANK=window.BANK||[];
 const BYID={};BANK.forEach(q=>BYID[q.id]=q);
 
@@ -345,6 +359,7 @@ const ICON={
 /* ═════════════ history / persistence ═════════════ */
 let H=store.get('sat.hist.v1')||{tests:[],seen:{},n:0};
 let T=store.get('sat.cur.v1')||null;       // test in progress
+let HARD=store.get('sat.hard')===true;     // start-screen Hard switch (next test only; a test in progress keeps its own level)
 let UI={timer:true,elim:false,hlMode:false,layout:store.get('sat.layout')||'auto',fs:store.get('sat.fs')||16,view:null};
 const saveH=()=>store.set('sat.hist.v1',H);
 function save(){if(T&&T.phase!=='results')store.set('sat.cur.v1',T)}
@@ -400,7 +415,7 @@ function planModule(key){
 }
 function newTest(){
   H.n=(H.n||0)+1;saveH();
-  T={id:Date.now().toString(36),n:H.n,started:Date.now(),plan:{rw1:null,rw2:null,m1:null,m2:null},route:{rw:null,math:null},
+  T={id:Date.now().toString(36),n:H.n,lvl:HARD?HARD_LEVEL:1,started:Date.now(),plan:{rw1:null,rw2:null,m1:null,m2:null},route:{rw:null,math:null},
      ans:{},mark:{},el:{},hl:{},notes:{},phase:'exam',mod:'rw1',idx:0,left:0,breakLeft:BREAK_SECONDS,done:{}};
   planModule('rw1');
   loadModule('rw1');
@@ -501,7 +516,7 @@ function drawTimer(){
 function loadModule(key){
   if(!T.plan[key])planModule(key);
   T.mod=key;T.idx=0;T.phase='exam';
-  T.left=MODS[key].min*60;
+  T.left=modMinutes(key,T.lvl)*60;
   (T.plan[key]||[]).forEach(id=>{H.seen[id]=(H.seen[id]||0)+1});saveH();
   deadline=Date.now()+T.left*1000;
   closeAll();save();draw();startClock();
@@ -685,7 +700,7 @@ function drawReview(app){
 function drawBetween(app){
   const k=T.next,m=MODS[k],prev=ORDER[ORDER.indexOf(k)-1];
   app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="mid"><h1>${MODS[prev].name} Module ${MODS[prev].num} complete</h1>
-  <p>Module ${m.num} of ${m.name} is next. ${m.min} minutes.</p><button class="btn big" data-a="cont">Continue</button></div></div><div class="ribbon"></div>`;
+  <p>Module ${m.num} of ${m.name} is next. ${modMinutes(k,T.lvl)} minutes.</p><button class="btn big" data-a="cont">Continue</button></div></div><div class="ribbon"></div>`;
 }
 function drawBreak(app){
   app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="mid"><h1>Break</h1>
@@ -700,7 +715,7 @@ function drawResults(app){
     return `<div class="mrow"><h3>${modTitle(k)}<span>${list.filter(id=>isCorrect(BYID[id],T.ans[id])).length} / ${list.length}${(k==='rw2'||k==='m2')?(((k==='rw2'?T.route.rw:T.route.math)==='h')?' · harder module':' · easier module'):''}</span></h3>
     <div class="grid">${list.map((id,i)=>{const ok=isCorrect(BYID[id],T.ans[id]);return `<button class="cell ${ok?'rg':has(T.ans[id])?'rb2':'ru'}" data-a="qrev" data-k="${k}" data-i="${i}" aria-label="Review question ${i+1}">${i+1}</button>`}).join('')}</div></div>`;
   };
-  app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="res"><h1>Practice Test ${T.n}</h1>
+  app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="res"><h1>Practice Test ${T.n}</h1>${(T.lvl||1)>1?`<div class="lvlnote">Hard mode · level ${T.lvl} of 5 · ${Math.round((1-LEVELS[T.lvl].time)*100)}% less time per module</div>`:''}
   <div class="scores"><div class="sbox tot"><div class="l">Estimated total</div><div class="v">${S.total}</div><div class="d">out of 1600</div></div>
   <div class="sbox"><div class="l">Reading and Writing</div><div class="v">${S.rw.est}</div><div class="d">${S.rw.correct} / ${S.rw.total} correct</div></div>
   <div class="sbox"><div class="l">Math</div><div class="v">${S.math.est}</div><div class="d">${S.math.correct} / ${S.math.total} correct</div></div></div>
@@ -739,11 +754,13 @@ function drawHome(app){
   const rows=H.tests.map(t=>{
     const S=t.sum;if(!S)return '';
     const d=new Date(t.finished||t.started);
-    return `<div class="hrow"><div><b>Practice Test ${t.n}</b><div class="meta">${d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} · RW ${S.rw.est} · Math ${S.math.est}</div></div>
+    return `<div class="hrow"><div><b>Practice Test ${t.n}</b><div class="meta">${d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} · RW ${S.rw.est} · Math ${S.math.est}${(t.lvl||1)>1?' · Hard':''}</div></div>
     <div class="sc"><b>${S.total}</b><button class="link" data-a="open" data-id="${t.id}">Review</button></div></div>`}).join('');
   app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="home"><div class="brand"><div class="logo">SAT</div><div><h1>Digital SAT Practice</h1><div class="sub">Full-length adaptive tests</div></div></div>
   ${cur?`<div class="resume"><div><b>Practice Test ${cur.n} in progress</b>${MODS[cur.mod].name} · Module ${MODS[cur.mod].num}</div><button class="btn" data-a="resumetest">Resume</button></div>`:''}
-  <div class="startrow"><button class="btn big" data-a="start">Start Practice Test ${(H.n||0)+(cur?1:1)}</button></div>
+  <div class="hardrow"><button class="sw ${HARD?'on':''}" role="switch" aria-checked="${HARD}" aria-label="Hard mode" data-a="hard"><i></i></button>
+  <div><b>Hard mode</b><span class="lvl">Level ${HARD_LEVEL} of 5</span><div class="meta">${HARD?`${Math.round((1-LEVELS[HARD_LEVEL].time)*100)}% less time per module: Reading and Writing ${modMinutes('rw1',HARD_LEVEL)} min, Math ${modMinutes('m1',HARD_LEVEL)} min. Same questions, routing and scoring.`:`Off: official timing (Reading and Writing ${MODS.rw1.min} min, Math ${MODS.m1.min} min).`}</div></div></div>
+  <div class="startrow"><button class="btn big" data-a="start">Start Practice Test ${(H.n||0)+(cur?1:1)}${HARD?' (Hard)':''}</button></div>
   <div class="cover"><i style="width:${BANK.length?Math.round(100*seen/BANK.length):0}%"></i></div><div class="covt">${seen} of ${BANK.length} questions seen</div>
   ${rows?`<div class="hist">${rows}</div>`:''}
   <div class="tiny">${(H.tests.length||cur||seen)?'<button class="link" data-a="reset">Reset history</button>':''}<p class="disc">Practice material based on College Board's Question Bank. Independent study tool; not an official College Board product.</p></div></div></div><div class="ribbon"></div>`;
@@ -986,6 +1003,7 @@ function setPick(L){
 const A={
   start(){if(store.get('sat.cur.v1')&&!confirm('Starting a new test will discard the one in progress. Continue?'))return;T=null;newTest()},
   again(){T=null;newTest()},
+  hard(){HARD=!HARD;store.set('sat.hard',HARD);draw()},
   resumetest(){T=store.get('sat.cur.v1');if(!T)return;resumeClock();draw()},
   home(){T=null;draw()},
   open(b){const t=H.tests.find(x=>x.id===b.dataset.id);if(!t)return;T=JSON.parse(JSON.stringify(t));T.phase='results';T.sum=t.sum;draw()},
