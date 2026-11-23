@@ -123,6 +123,54 @@ def save(a, box, outdir):
     return '⟦f:%s:%.3f:%.3f⟧' % (h, im.width / EM, im.height / EM)
 
 
+def _blocks(a, y0, y1, gap=None):
+    """White-space separated blocks of ink between rows y0 and y1: -> [(top, bottom, left, right)]."""
+    ink = a < 200; gap = gap or int(0.21 * DPI)
+    rows = ink[y0:y1].any(1); out = []; i = 0
+    while i < len(rows):
+        if rows[i]:
+            j = last = i
+            while j < len(rows) and j - last <= gap:
+                if rows[j]: last = j
+                j += 1
+            c = np.where(ink[y0 + i:y0 + last + 1].any(0))[0]
+            out.append((y0 + i, y0 + last + 1, int(c[0]), int(c[-1]) + 1)); i = last + 1
+        else: i += 1
+    return [b for b in out if b[1] - b[0] > 8]
+
+
+def restore_graph_choices(q, pdf, outm, outf):
+    """75a32330: two display equations, then four graphs as the answer choices (A-D), spread over three PDF pages.
+    The old screenshot cut choice D off, which is why the question was parked. Each graph stands above its letter."""
+    EMI = 38.4 * 2 / 2          # inline pictures: 38.4 px per em at 200.8 dpi (the bank's pictures are 2x the screenshots)
+    graphs, eqs = [], []
+    for pg in range(q['p'], q['ep'] + 1):
+        W = words(pdf, pg); a = render(pdf, pg); k = DPI / 72
+        stop = sorted([w for w in W if w[4] == 'Correct' and w[0] < 60], key=lambda w: w[1])
+        yend = int(stop[0][1] * k) - 6 if stop else a.shape[0] - 6
+        if pg == q['p']:
+            yq = [w for w in W if w[4] == 'Question' and not any(v[4] == 'ID:' and abs(v[1] - w[1]) < 2 for v in W)]
+            ya = sorted([w for w in W if w[4] == 'Answer' and w[0] < 60], key=lambda w: w[1])
+            top = _blocks(a, int(yq[0][3] * k) + 6, int(ya[0][1] * k) - 6, gap=int(0.1 * DPI))
+            eqs = [(a, b) for b in top[:2]]                      # the two equations; the third block is the stem text
+            y0 = int(ya[0][3] * k) + 6
+        else: y0 = 6
+        graphs += [(a, b) for b in _blocks(a, y0, yend, gap=int(0.1 * DPI)) if b[1] - b[0] > 400]
+    if len(graphs) != 4 or len(eqs) != 2: sys.exit('75a32330: found %d graphs and %d equations, expected 4 and 2' % (len(graphs), len(eqs)))
+    P = []
+    for a, (y0, y1, x0, x1) in eqs:
+        ink = a < 200; pad = 6
+        crop = a[y0 - pad:y1 + pad, x0 - pad:x1 + pad]
+        cols = np.where((crop < 200).any(0))[0]; last = cols[-1]
+        c = last
+        while c > 0 and (crop[:, c - 6:c + 1] < 200).any(): c -= 1                 # leftmost column of the last character
+        rr = np.where((crop[:, c:last + 1] < 200).any(1))[0]; base = int(rr[-1]) + 1  # its bottom is the baseline
+        im = Image.fromarray(crop).convert('L'); buf = io.BytesIO(); im.save(buf, 'WEBP', lossless=True, method=6); data = buf.getvalue()
+        h = hashlib.sha1(data).hexdigest()[:12]; open(os.path.join(outm, h + '.webp'), 'wb').write(data)
+        P.append('⟦i:%s:%.3f:%.3f⟧' % (h, im.height / EMI, -(im.height - base) / EMI))
+    return P, [save(a, b, outf) for a, b in graphs]
+
+
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--pdf-dir', required=True); ap.add_argument('--apply', action='store_true')
     args = ap.parse_args()
@@ -130,7 +178,6 @@ def main():
     s = open(os.path.join(BANK, 'meta.js'), encoding='utf-8').read()
     head, tail = s[:s.index('[')], s[s.rindex(']') + 1:]; B = json.loads(s[s.index('['):s.rindex(']') + 1])
     by = {q['id']: q for q in B}; by.update({e['id']: e['entry'] for e in ex})
-    ell = TK.findall(by[ELL_FROM[0]]['P'][ELL_FROM[1]])[0]; ell = '⟦%s:%s:%s:%s⟧' % ell
     restored, left = [], []
     for e in ex:
         qid = e['id']
@@ -143,12 +190,19 @@ def main():
         P = [p for i, p in enumerate(q['P']) if i not in idx]
         P[idx[0]:idx[0]] = toks if idx[0] <= len(P) else toks
         if qid in FIX_TEXT:
+            ell = '⟦%s:%s:%s:%s⟧' % TK.findall(by[ELL_FROM[0]]['P'][ELL_FROM[1]])[0]   # the bank's own picture of "ℓ"
             pi, old = FIX_TEXT[qid]; pi = pi - len([i for i in idx if i < pi]) + len(toks)
             ptxt = P[pi]; m = re.search(r'⟦i:[0-9a-f]+:[\d.]+:-?[\d.]+⟧ Math output error', ptxt)
             if not m: sys.exit('%s: no error text found' % qid)
             P[pi] = ptxt[:m.start()] + ell + ptxt[m.end():]
         q['P'] = P; restored.append(q)
         print(qid, 'restored,', len(boxes), 'figure(s)')
+    for e in [e for e in left if e['id'] == '75a32330']:
+        q = {k: v for k, v in e['entry'].items() if k not in ('w', 'h', 'P', 'o')}
+        if not args.apply: print('75a32330 would be rebuilt (two equations, four graph choices)'); continue
+        P, O = restore_graph_choices(q, os.path.join(args.pdf_dir, SRC[q['src']]), BANK + '/m', BANK + '/f')
+        q['P'] = P + ['Which graph represents the given system of equations?']; q['o'] = O
+        restored.append(q); left.remove(e); print('75a32330 restored, 2 equations + 4 graph choices')
     if not args.apply: print('(report only; use --apply to write)'); return
     keep = B + restored
     with open(os.path.join(BANK, 'meta.js'), 'w', encoding='utf-8') as f:

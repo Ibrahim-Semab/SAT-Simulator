@@ -64,9 +64,11 @@ Question quality check
   regenerating the bank.
 * python3 tools/restore_figures.py --pdf-dir <folder with the PDFs> [--apply] brings those questions back: it crops the
   figure from the original PDF page (see "Original PDFs" above) as one clean picture, replaces the loose pieces with it
-  and moves the question back into bank/meta.js. It did this for 19 questions. In the two questions where the source PDF
-  prints "Math output error" instead of a line name (58687a66, 858809e7), the text now says "line ℓ", the name the
-  figure gives that line. One question (75a32330, answer choice D missing from its screenshot) is still excluded.
+  and moves the question back into bank/meta.js. It did this for all 20 questions that had been parked: 19 split
+  figures, and 75a32330, whose answer choice D (a graph) was cut off in its screenshot and which now has both equations
+  and all four graphs taken from the PDF. In the two questions where the source PDF prints "Math output error" instead
+  of a line name (58687a66, 858809e7), the text now says "line ℓ", the name the figure gives that line.
+  bank/excluded.json is now empty.
   Rebuilding the whole bank from the PDFs brings the broken figures back; run fix_bank.py and restore_figures.py again.
 * python3 tools/trim_inline_fragments.py [--apply] cuts stray neighbour characters (the comma or full stop after a formula,
   half of the next letter) off the edges of small inline formula pictures in bank/m. It only removes a separate cluster of ink
