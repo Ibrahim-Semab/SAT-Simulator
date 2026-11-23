@@ -25,6 +25,23 @@ The included bank contains 1,748 unique SAT questions extracted from the three s
 * Math Hard: 340 questions
 * Reading and Writing: 753 questions
 
+Original PDFs (where they are)
+------------------------------
+The three source PDFs are NOT on main. They are about 44 MB, so they are kept out of the deployed site on their own
+git branch of this repository:   add-original-pdfs
+  https://github.com/Ibrahim-Semab/SAT-Simulator/tree/add-original-pdfs
+* Math Easy+Medium_compressed.pdf        (655 questions, 687 pages)
+* Math Hard_compressed.pdf               (340 questions)
+* Reading & Writing All Q&A_compressed.pdf   (753 questions)
+Get them without leaving main:
+    git fetch origin add-original-pdfs
+    git show "origin/add-original-pdfs:Math Hard_compressed.pdf" > "Math Hard_compressed.pdf"     (same for the others)
+  or: git checkout origin/add-original-pdfs -- "Math Hard_compressed.pdf"      (puts the file in your working folder)
+Every question in bank/meta.js records where it came from: "src" is the PDF (Math Easy+Medium, Math Hard or
+Reading & Writing) and "p" to "ep" are its first and last page, counted from 1. Example: question 0ea7ef01 is on
+page 88 of Math Easy+Medium. The pages are vector drawings, so figures can be cropped from them at any resolution.
+The PDFs are used by tools/pdf_pipeline (explanations and equation images) and tools/restore_figures.py (figures).
+
 Question images exclude the answer key and explanation. The matching explanation image includes the correct answer and rationale. Content that continues onto another PDF page is joined in reading order. Figures, graphs, tables, and equations are preserved in the images.
 
 See bank/index.csv for the question inventory and bank/extraction_notes.txt for extraction details.
@@ -42,6 +59,12 @@ Question quality check
 * bank/excluded.json holds questions kept out of tests because their source screenshot is itself incomplete.
 * python3 tools/fix_bank.py [--apply] repairs figure questions that the text pipeline split into pieces: pictures that are
   only a copy or fragment of another picture in the same question are dropped, and questions that cannot be repaired
-  without the source PDF (detached labels or axis titles, two different crops of one figure, "Math output error")
+  from the screenshots alone (detached labels or axis titles, two different crops of one figure, "Math output error")
   are moved to bank/excluded.json with the reason. tools/audit_bank.py runs the same checks, so run it after
-  regenerating the bank. Rebuilding the bank from the PDFs will bring these questions back, and the audit will flag them again.
+  regenerating the bank.
+* python3 tools/restore_figures.py --pdf-dir <folder with the PDFs> [--apply] brings those questions back: it crops the
+  figure from the original PDF page (see "Original PDFs" above) as one clean picture, replaces the loose pieces with it
+  and moves the question back into bank/meta.js. It did this for 19 questions. In the two questions where the source PDF
+  prints "Math output error" instead of a line name (58687a66, 858809e7), the text now says "line ℓ", the name the
+  figure gives that line. One question (75a32330, answer choice D missing from its screenshot) is still excluded.
+  Rebuilding the whole bank from the PDFs brings the broken figures back; run fix_bank.py and restore_figures.py again.

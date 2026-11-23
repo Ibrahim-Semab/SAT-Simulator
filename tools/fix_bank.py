@@ -35,12 +35,7 @@ CAPTION = re.compile(r'note\W*figures?\s+(is\s+|are\s+)?not\s+drawn\s+to\s+scale
 # questions whose extra pictures were looked at by hand and are fine as they are (id -> why)
 REVIEWED_OK = {}
 # broken in ways the pixel checks cannot tell (found by looking at every flagged question) -> reason
-FORCE_EXCLUDE = {
-    '79340403': 'bar chart y-axis numbers cut off; their digits sit in a separate crop',
-    'd3b9c8d8': 'box plot: group labels and a second axis are loose crops, so boxes cannot be matched to groups',
-    '25fc031a': 'second histogram is clipped; its axis labels sit in loose crops',
-    'e9c5bfb2': 'side labels of the rectangles are cut off and sit in a loose crop',
-}
+FORCE_EXCLUDE = {}   # (the four charts once listed here were re-cropped from the PDFs by tools/restore_figures.py)
 
 _cache = {}
 def load(kind, h):
