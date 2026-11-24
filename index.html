@@ -521,11 +521,11 @@ function loadModule(key){
 }
 function resumeClock(){deadline=Date.now()+(T.phase==='break'?T.breakLeft:T.left)*1000;startClock()}
 function submitModule(auto){
-  closeAll();
+  closeAll();NOTICE=null;
   const k=T.mod;T.done[k]=true;
-  if(k==='rw1'){T.route.rw=modCorrect('rw1')>=THRESH.rw?'h':'l';planModule('rw2');T.next='rw2';T.phase='between'}
+  if(k==='rw1'){T.route.rw=modCorrect('rw1')>=THRESH.rw?'h':'l';planModule('rw2');T.next='rw2';NOTICE=MODS.rw1.name+' Module 1 complete';loadModule('rw2');return}
   else if(k==='rw2'){T.next='m1';T.phase='break';T.breakLeft=BREAK_SECONDS;deadline=Date.now()+BREAK_SECONDS*1000}
-  else if(k==='m1'){T.route.math=modCorrect('m1')>=THRESH.math?'h':'l';planModule('m2');T.next='m2';T.phase='between'}
+  else if(k==='m1'){T.route.math=modCorrect('m1')>=THRESH.math?'h':'l';planModule('m2');T.next='m2';NOTICE=MODS.m1.name+' Module 1 complete';loadModule('m2');return}
   else{finishTest();return}
   save();draw();
 }
@@ -626,6 +626,7 @@ function draw(){
   else if(T.phase==='between')drawBetween(app);
   else if(T.phase==='break')drawBreak(app);
   else if(T.phase==='results')drawResults(app);
+  drawNotice();
   layout();
 }
 const modTitle=k=>`Section ${MODS[k].sec}, Module ${MODS[k].num}: ${MODS[k].name}`;
@@ -694,6 +695,18 @@ function drawReview(app){
   <footer class="ftr"><div class="who">Practice Test ${T.n}</div><div></div>
   <div class="fr-r"><button class="btn" data-a="back">Back</button><button class="btn" data-a="submit">Next</button></div></footer>`;
   drawTimer();
+}
+/* Official behaviour: module 2's clock starts the moment module 1 ends. The notice only sits over the question area;
+   the header (with the running clock) stays visible and the clock is never paused. */
+let NOTICE=null;
+function drawNotice(){
+  const o=$('#bridge');if(o)o.remove();
+  if(!NOTICE||!T||T.phase!=='exam'||UI.view)return;
+  const h=document.querySelector('.hdr'),top=h?h.getBoundingClientRect().bottom:68;
+  const d=document.createElement('div');d.id='bridge';
+  d.style.cssText='position:fixed;left:0;right:0;bottom:0;top:'+top+'px;z-index:50;background:rgba(255,255,255,.96);display:flex;align-items:center;justify-content:center;text-align:center;padding:20px';
+  d.innerHTML='<div class="mid"><h1>'+NOTICE+'</h1><p>The timer for the next module is already running.</p><button class="btn big" data-a="dismiss">Continue</button></div>';
+  document.body.appendChild(d);
 }
 function drawBetween(app){
   const k=T.next,m=MODS[k],prev=ORDER[ORDER.indexOf(k)-1];
@@ -1043,6 +1056,7 @@ const A={
   },
   submitnow(){closeModal();submitModule(false)},
   cont(){loadModule(T.next)},
+  dismiss(){NOTICE=null;const o=$('#bridge');if(o)o.remove()},
   resume(){loadModule('m1')},
   qrev(b){UI.view={k:b.dataset.k,i:+b.dataset.i};draw();scrollTo(0,0)},
   qrback(){UI.view=null;draw()},
