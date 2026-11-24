@@ -82,11 +82,11 @@ Question quality check
 
 Hard mode (start screen)
 ------------------------
-A switch on the start screen gives the next test 10% less time than the official test per module (Reading and Writing
-28:48 instead of 32:00, Math 31:30 instead of 35:00). Only the time changes: the questions, the module 2 routing, the
-550 cap and the scoring are the official ones. The switch is remembered; a test in progress keeps the timing it started
-with; the history list marks hard tests with "Hard". To change the amount, edit HARD_TIME (0.9) near the top of the
-script in index.html.
+The start screen has a "Test mode" choice: Official (official time), Hard (5% less time per module) and Extreme (10% less
+time per module; Reading and Writing 28:48 instead of 32:00, Math 31:30 instead of 35:00). Only the time changes: the
+questions, the module 2 routing, the 550 cap and the scoring are the official ones. The choice is remembered; a test in
+progress keeps the mode it started with; the history list shows the mode in the title, e.g. "Practice Test 9 (Hard)"
+(nothing is added for Official). To change the amounts, edit MODES near the top of the script in index.html.
 
 Figure slivers (tools/trim_figure_slivers.py)
 ---------------------------------------------
