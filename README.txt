@@ -89,3 +89,10 @@ Figure slivers (tools/trim_figure_slivers.py)
 Some figure/table crops caught specks of the neighbouring text line (the edge of the next answer table, the cut-off
 bottom of a caption). The tool crops such slivers (height <= 4 px, < 0.5% of the ink, 30+ px away from the figure) and
 rescales the height in the tokens of bank/meta.js. Run `python3 tools/trim_figure_slivers.py` (report) or `--apply`.
+
+Blurry figures (tools/upscale_figures.py)
+-----------------------------------------
+Many scatterplots/graphs are only small bitmaps inside the original PDFs (e.g. 140 x 154 px), so they cannot be truly
+sharp. The tool takes the PDF's embedded bitmap (pdfimages), enlarges it 3x, removes JPEG noise, sharpens and stretches
+the contrast, and swaps it in only when it is verifiably the same drawing as the bank picture (dark-ink overlap >= 0.8
+and clearly better than any other bitmap on the page). Run with --pdf-dir (PDFs from the add-original-pdfs branch).
