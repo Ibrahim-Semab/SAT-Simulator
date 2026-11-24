@@ -78,9 +78,8 @@ Question quality check
 
 Hard mode (start screen)
 ------------------------
-A switch on the start screen makes the next test harder by giving less time. Difficulty runs from level 1 (official
-timing) to level 5; the switch uses level 2, which is 85% of the official time per module (Reading and Writing 27 minutes
-instead of 32, Math 30 instead of 35). Only the time changes: the questions, the module 2 routing, the 550 cap and the
-scoring are the official ones. The switch is remembered; a test in progress keeps the level it started with; results
-and the history list show "Hard". To change how hard the switch is, edit HARD_LEVEL or the LEVELS table (levels 3 to 5 are
-already defined: 75%, 65%, 55% of the official time) near the top of the script in index.html.
+A switch on the start screen gives the next test 10% less time than the official test per module (Reading and Writing
+28:48 instead of 32:00, Math 31:30 instead of 35:00). Only the time changes: the questions, the module 2 routing, the
+550 cap and the scoring are the official ones. The switch is remembered; a test in progress keeps the timing it started
+with; the history list marks hard tests with "Hard". To change the amount, edit HARD_TIME (0.9) near the top of the
+script in index.html.
