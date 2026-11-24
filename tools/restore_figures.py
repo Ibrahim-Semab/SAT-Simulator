@@ -5,7 +5,7 @@ The original PDFs are NOT on main: they live on the git branch  add-original-pdf
 Fetch them first, e.g.
     git fetch origin add-original-pdfs
     mkdir -p /tmp/pdfs && for f in "Math Easy+Medium_compressed.pdf" "Math Hard_compressed.pdf" \
-        "Reading & Writing All Q&A_compressed.pdf"; do git show "origin/add-original-pdfs:$f" > "/tmp/pdfs/$f"; done
+        "Reading & Writing_compressed.pdf"; do git show "origin/add-original-pdfs:$f" > "/tmp/pdfs/$f"; done
 then run
     python3 tools/restore_figures.py --pdf-dir /tmp/pdfs [--apply]
 
@@ -22,7 +22,7 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 BANK = os.path.join(HERE, '..', 'bank')
 SRC = {'Math Easy+Medium': 'Math Easy+Medium_compressed.pdf', 'Math Hard': 'Math Hard_compressed.pdf',
-       'Reading & Writing': 'Reading & Writing All Q&A_compressed.pdf'}
+       'Reading & Writing': 'Reading & Writing_compressed.pdf'}
 DPI = 200.8            # twice the 100.4 dpi at which the bank's pictures were made (28.8 px per em there)
 EM = 28.8 * 2          # pixels per em at DPI
 PAD = 14

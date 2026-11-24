@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import flow, render
 from render import PageRaster
 
-DOCS = {'Reading & Writing': ('rw', 'Reading & Writing All Q&A_compressed.pdf'),
+DOCS = {'Reading & Writing': ('rw', 'Reading & Writing_compressed.pdf'),
         'Math Easy+Medium': ('em', 'Math Easy+Medium_compressed.pdf'),
         'Math Hard': ('hard', 'Math Hard_compressed.pdf')}
 

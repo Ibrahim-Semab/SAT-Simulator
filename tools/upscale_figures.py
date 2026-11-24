@@ -18,7 +18,7 @@ import cv2, numpy as np
 from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__)); BANK = os.path.join(HERE, '..', 'bank')
 SRC = {'Math Easy+Medium': 'Math Easy+Medium_compressed.pdf', 'Math Hard': 'Math Hard_compressed.pdf',
-       'Reading & Writing': 'Reading & Writing All Q&A_compressed.pdf'}
+       'Reading & Writing': 'Reading & Writing_compressed.pdf'}
 TK = re.compile(r'⟦f:([0-9a-f]+):(-?[\d.]+):(-?[\d.]+)⟧')
 MIN = 60; FACT = 3
 

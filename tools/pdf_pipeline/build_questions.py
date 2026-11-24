@@ -122,8 +122,9 @@ def find_figures(entries):
         for e in texts:
             if inside(e): continue
             ln = line_of(e); lx0 = min(t[2] for t in ln); lx1 = max(t[4] for t in ln)
-            near_above = y0 - 22 <= e[3] <= y0 + 1 and lx0 >= 40
-            label = lx0 >= 40 and lx1 - lx0 <= 150 and x0 - 90 <= e[2] and e[4] <= x1 + 70 and y0 - 30 <= e[3] <= y1 + 150
+            centred = abs((lx0 + lx1) / 2 - (x0 + x1) / 2) <= 70 and lx1 - lx0 <= (x1 - x0) + 60   # a chart title or legend centred on the chart
+            near_above = (y0 - 22 <= e[3] <= y0 + 1 and lx0 >= 40) or (centred and y0 - 75 <= e[3] <= y0 + 1 and lx0 >= 40)
+            label = lx0 >= 40 and (lx1 - lx0 <= 150 or centred) and x0 - 90 <= e[2] and e[4] <= x1 + 70 and y0 - 30 <= e[3] <= y1 + (150 if lx1 - lx0 <= 150 else 70)
             if any(in_box(e, f2) for f2 in figs if f2 is not fb): continue
             if (near_above or label) and all(gap(e, fb) <= gap(e, f2) for f2 in figs if f2 is not fb): labels.append(e)
         for e in labels:

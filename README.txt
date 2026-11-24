@@ -20,10 +20,10 @@ Keep the "bank" folder next to it.
 * Colours are CSS variables at the top of index.html (:root).
 Full question bank
 ------------------
-The included bank contains 1,748 unique SAT questions extracted from the three supplied PDFs:
+The included bank contains 1,933 unique SAT questions extracted from the three supplied PDFs:
 * Math Easy + Medium: 655 questions
 * Math Hard: 340 questions
-* Reading and Writing: 753 questions
+* Reading and Writing: 938 questions
 
 Original PDFs (where they are)
 ------------------------------
@@ -32,7 +32,11 @@ git branch of this repository:   add-original-pdfs
   https://github.com/Ibrahim-Semab/SAT-Simulator/tree/add-original-pdfs
 * Math Easy+Medium_compressed.pdf        (655 questions, 687 pages)
 * Math Hard_compressed.pdf               (340 questions)
-* Reading & Writing All Q&A_compressed.pdf   (753 questions)
+* Reading & Writing_compressed.pdf       (938 questions, 1005 pages)  <- the COMPLETE Reading and Writing bank
+* Reading & Writing All Q&A_compressed.pdf   (753 questions) - the older, incomplete download. It is kept on the branch
+  but nothing uses it any more. Every Reading and Writing question's "p"/"ep" now counts pages of the complete PDF.
+(The 185 Reading and Writing questions that the older PDF lacked were added from the complete PDF with
+tools/pdf_pipeline/add_missing.py; see "Adding questions from a newer PDF" below.)
 Get them without leaving main:
     git fetch origin add-original-pdfs
     git show "origin/add-original-pdfs:Math Hard_compressed.pdf" > "Math Hard_compressed.pdf"     (same for the others)
@@ -96,3 +100,16 @@ Many scatterplots/graphs are only small bitmaps inside the original PDFs (e.g. 1
 sharp. The tool takes the PDF's embedded bitmap (pdfimages), enlarges it 3x, removes JPEG noise, sharpens and stretches
 the contrast, and swaps it in only when it is verifiably the same drawing as the bank picture (dark-ink overlap >= 0.8
 and clearly better than any other bitmap on the page). Run with --pdf-dir (PDFs from the add-original-pdfs branch).
+
+Adding questions from a newer PDF (tools/pdf_pipeline/add_missing.py)
+---------------------------------------------------------------------
+The first Reading and Writing PDF had only 753 of the 938 questions of the College Board bank. After the complete PDF
+was uploaded, the 185 missing ones were added like this:
+    python3 tools/pdf_pipeline/extract.py "Reading & Writing_compressed.pdf" /tmp/pages/rw2
+    python3 tools/pdf_pipeline/add_missing.py --pages /tmp/pages/rw2 --pdf "Reading & Writing_compressed.pdf" --apply
+It reads every "Question ID" of the PDF, skips the ones already in bank/meta.js, and for each new one takes domain, skill,
+difficulty, stem, prompt, choices, correct answer and explanation from the PDF (figures and equations are cut from the
+PDF pages into bank/f and bank/m). The same run re-points p/ep of all Reading and Writing questions to the complete PDF.
+`--check N` rebuilds N existing questions the same way and reports how often header and prompt match the bank (80 of 80
+headers and 78 of 80 prompts matched). Chart titles and legends that sit around a figure are now absorbed into the figure
+picture by build_questions.py (find_figures) instead of staying behind as loose text.
