@@ -275,8 +275,17 @@
   };
 
   drawResults = drawAdvancedResults;
-  A.advFilter = b => { UI.advFilter = b.dataset.v; UI.advPage = 1; drawResults($('#app')); };
-  A.advSize = b => { UI.advSize = Number(b.dataset.v); UI.advPage = 1; drawResults($('#app')); };
+  // Redraw the results page but keep the clicked control where it was on screen (no jump back to the top).
+  function keepPlace(b, fn) {
+    const sel = '[data-a="' + b.dataset.a + '"][data-v="' + b.dataset.v + '"]';
+    const before = b.getBoundingClientRect().top;
+    fn();
+    const nb = document.querySelector(sel);
+    const sc = document.querySelector('.center');
+    if (nb && sc) sc.scrollTop += nb.getBoundingClientRect().top - before;
+  }
+  A.advFilter = b => keepPlace(b, () => { UI.advFilter = b.dataset.v; UI.advPage = 1; drawResults($('#app')); });
+  A.advSize = b => keepPlace(b, () => { UI.advSize = Number(b.dataset.v); UI.advPage = 1; drawResults($('#app')); });
   A.advPage = b => { UI.advPage = Number(b.dataset.v); drawResults($('#app')); const l = $('.adv-question-list'); if (l) l.scrollIntoView({block:'start'}); };
     A.advOpen = b => {
     UI.view = { k:b.dataset.k, i:Number(b.dataset.i), f:(UI.advFilter || 'review') === 'review' ? 'review' : '' };
