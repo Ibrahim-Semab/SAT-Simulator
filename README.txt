@@ -7,8 +7,15 @@ Keep the "bank" folder next to it.
   once everything has been seen, the least-repeated ones come back.
   History, in-progress tests and results are stored in the browser (localStorage).
 * Reading and Writing follows the official blueprint: 27 questions per module, ordered by domain then skill
-  (Craft and Structure, Information and Ideas, Standard English Conventions, Expression of Ideas), with
-  ~28/26/26/20% across the two modules. Skill counts per module are set in QUOTA at the top of index.html.
+  (Craft and Structure, Information and Ideas, Standard English Conventions, Expression of Ideas; inside the last one
+  Transitions come before Rhetorical Synthesis), ~30/26/24/20% across the two modules. Skill counts per module (QUOTA at
+  the top of index.html): Words in Context 4, Text Structure and Purpose 3, Cross-Text Connections 1, Central Ideas and
+  Details 2, Command of Evidence Quantitative 2 (a graph or table question) and Textual 1, Inferences 2, Boundaries 3-4,
+  Form, Structure, and Sense 3, Transitions 2-3, Rhetorical Synthesis 3. The bank keeps Command of Evidence as one
+  skill; skillOf() splits it by whether the question has a graph/table picture.
+* Math follows the official domain shares (Algebra 35%, Advanced Math 35%, Problem-Solving and Data Analysis 15%,
+  Geometry and Trigonometry 15%; 8/7/4/3 questions in module 1, 7/8/3/4 in module 2). Inside a domain the skills are
+  rotated evenly, taking the ones the test has used least first (SKILLS.math), so a whole test covers every skill.
 * Module 2 is chosen from your Module 1 result (22+ of 27 in Reading and Writing, about 80%,
   16+ of 22 in Math, about 70% -> harder module). The easier module 2 caps the section score at 550.
 * Scoring is 3-parameter logistic item response theory: each question has its own difficulty, discrimination and
