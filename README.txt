@@ -113,3 +113,9 @@ PDF pages into bank/f and bank/m). The same run re-points p/ep of all Reading an
 `--check N` rebuilds N existing questions the same way and reports how often header and prompt match the bank (80 of 80
 headers and 78 of 80 prompts matched). Chart titles and legends that sit around a figure are now absorbed into the figure
 picture by build_questions.py (find_figures) instead of staying behind as loose text.
+
+Reading typography
+------------------
+Question text, answer choices and explanations use a clean serif (--serif in index.html: Source Serif 4, then Iowan Old
+Style, Charter, Noto Serif, Georgia ... whichever the device has; no font files are bundled). In explanations every
+"Choice X ..." sentence starts its own paragraph with a bold label, the correct choice in green (see ratParas()).
