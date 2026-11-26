@@ -126,3 +126,9 @@ Reading typography
 Question text, answer choices and explanations use a clean serif (--serif in index.html: Source Serif 4, then Iowan Old
 Style, Charter, Noto Serif, Georgia ... whichever the device has; no font files are bundled). In explanations every
 "Choice X ..." sentence starts its own paragraph with a bold label, the correct choice in green (see ratParas()).
+
+Question review: "Show correct answer and explanation"
+--------------------------------------------------------
+In the individual question review screen a checkbox (unchecked by default, and unchecked again on every question)
+controls the spoilers. Unchecked: only your own answer is marked (neutral) and the header says "Answered"/"Unanswered".
+Checked: the correct choice (or the accepted answer), Correct/Incorrect and the explanation appear.

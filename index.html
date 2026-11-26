@@ -267,6 +267,7 @@ svg{display:block}
 .rv img.rat{max-width:100%;height:auto;display:block;margin-top:6px}
 .rv h4{margin:18px 0 4px;font-size:14px}
 .yours{margin-top:14px;font-size:15px}
+.revtog{display:flex;align-items:center;gap:10px;margin:16px 0;padding:12px 16px;border:1px solid var(--line);border-radius:12px;font-weight:600;cursor:pointer;user-select:none}.revtog input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
 
 @media (max-width:760px){
   .hdr{padding:0 12px;height:auto;min-height:60px;grid-template-columns:1fr auto;row-gap:2px;padding-top:6px;padding-bottom:6px}
@@ -772,19 +773,21 @@ function qReviewList(){            // with the "To review" filter on, Back / Nex
 function drawQReview(app){
   const L=qReviewList();let p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p<0)p=0;
   const it=L[p],q=BYID[it.id],ans=T.ans[it.id],ok=isCorrect(q,ans);
+  const rev=!!UI.view.rev;          // "Show correct answer and explanation" (off by default, off again on every question)
   let body;
   if(q.m==='SPR'){
-    body=`<div class="yours"><b>Your answer:</b> ${has(ans)?esc(ans):'<i>none</i>'} &nbsp;·&nbsp; <b>Accepted:</b> ${esc(q.a)}</div>`;
+    body=`<div class="yours"><b>Your answer:</b> ${has(ans)?esc(ans):'<i>none</i>'}${rev?` &nbsp;·&nbsp; <b>Accepted:</b> ${esc(q.a)}`:''}</div>`;
   }else{
     body=promptHTML(q)+`<div class="choices">${['A','B','C','D'].map((Lt,i)=>{
-      const good=q.a===Lt,mine=ans===Lt;
-      return choiceHTML(q,Lt,i,'static '+(good?'fb-good':mine?'fb-bad':''),'tabindex="-1"',good?'<span class="tag" style="background:var(--good)">Correct</span>':mine?'<span class="tag" style="background:var(--bad)">Your answer</span>':'');
+      const good=rev&&q.a===Lt,mine=ans===Lt;
+      return choiceHTML(q,Lt,i,'static '+(good?'fb-good':mine?(rev?'fb-bad':'sel'):''),'tabindex="-1"',good?'<span class="tag" style="background:var(--good)">Correct</span>':mine?`<span class="tag" style="background:${rev?'var(--bad)':'var(--ink2)'}">Your answer</span>`:'');
     }).join('')}</div>`;
   }
-  app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="rv"><div class="info"><span class="chip ${ok?'g':'b'}">${ok?'Correct':has(ans)?'Incorrect':'Unanswered'}</span>
+  app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="rv"><div class="info"><span class="chip ${rev?(ok?'g':'b'):''}">${rev?(ok?'Correct':has(ans)?'Incorrect':'Unanswered'):(has(ans)?'Answered':'Unanswered')}</span>
   <b class="rvq">${MODS[it.k].s==='rw'?'R&amp;W':'Math'} ${MODS[it.k].num}.${it.i+1}</b><span>${esc(q.d)}${q.k?' · '+esc(q.k):''}</span><span class="chip">${{E:'Easy',M:'Medium',H:'Hard'}[q.l]}</span></div>
   <div class="qa">${stemHTML(q,false)}<div style="height:18px"></div>${body}</div>
-  <div class="qa"><h4 style="margin-top:0">Explanation</h4><div class="ratx" data-rid="${q.id}">${ratHTML(q.id)}</div></div></div></div>
+  <label class="revtog"><input type="checkbox" data-a="qrreveal" ${rev?'checked':''}> Show correct answer and explanation</label>
+  ${rev?`<div class="qa"><h4 style="margin-top:0">Explanation</h4><div class="ratx" data-rid="${q.id}">${ratHTML(q.id)}</div></div>`:''}</div></div>
   <div class="ribbon"></div>
   <footer class="ftr"><div class="who">Practice Test ${T.n}</div><button class="navpill" data-a="qrback">Back to results</button>
   <div class="fr-r">${p>0?'<button class="btn" data-a="qrprev">Back</button>':''}${p<L.length-1?'<button class="btn" data-a="qrnext">Next</button>':''}</div></footer>`;
@@ -1090,6 +1093,7 @@ const A={
   resume(){loadModule('m1')},
   qrev(b){UI.view={k:b.dataset.k,i:+b.dataset.i};draw();scrollTo(0,0)},
   qrback(){UI.view=null;draw()},
+  qrreveal(b){const c=$('.center'),y=c?c.scrollTop:0;UI.view.rev=b.checked;draw();const n=$('.center');if(n)n.scrollTop=y},
   qrprev(){const L=qReviewList(),p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p>0){UI.view={k:L[p-1].k,i:L[p-1].i,f:UI.view.f};draw();$('.center').scrollTo(0,0)}},
   qrnext(){const L=qReviewList(),p=L.findIndex(x=>x.k===UI.view.k&&x.i===UI.view.i);if(p<L.length-1){UI.view={k:L[p+1].k,i:L[p+1].i,f:UI.view.f};draw();$('.center').scrollTo(0,0)}}
 };
