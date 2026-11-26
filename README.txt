@@ -132,3 +132,10 @@ Question review: "Show correct answer and explanation"
 In the individual question review screen the result is always shown (Correct / Incorrect / Unanswered, your own
 choice in green or red). A checkbox (unchecked by default, and unchecked again on every question) reveals what you did
 not get: the correct choice / accepted answer of a question you missed, and the explanation.
+
+Motion and keyboard
+-------------------
+Pages animate in (slide forward/back between questions, rise/stagger on home and results,
+score count-up, micro-interactions on buttons, cells and choices). All motion is disabled
+under prefers-reduced-motion. In the exam: A-D or 1-4 pick an answer, Left/Right arrows
+go back/next.
