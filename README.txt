@@ -139,3 +139,11 @@ Pages animate in (slide forward/back between questions, rise/stagger on home and
 score count-up, micro-interactions on buttons, cells and choices). All motion is disabled
 under prefers-reduced-motion. In the exam: A-D or 1-4 pick an answer, Left/Right arrows
 go back/next.
+
+Student-produced response (grid-in) rules
+-----------------------------------------
+Input: digits . / and a leading - only; one decimal point or one slash (never both); max 5 characters,
+6 with a leading minus. Grading: entry must be valid (no zero/empty denominator), then it is correct if it
+matches a stored key, equals the value (any equivalent fraction/decimal that fits), or - for a decimal that
+cannot fit - fills the whole box truncated or rounded at the last slot. Shorter approximations are wrong.
+Not yet done: SPR directions panel, invalid flag in the preview, interval keys for "any value in range" questions.

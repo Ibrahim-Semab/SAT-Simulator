@@ -497,14 +497,41 @@ function numVal(s){
   return null;
 }
 function aliases(key){let s=String(key??'').trim();s=s.replace(/(?<=\d),(?=\d{3}(?:\D|$))/g,'');return s.split(/\s*,\s*/).filter(Boolean)}
+/* Student-produced response rules (Bluebook): 5 characters, or 6 with a leading minus; digits . / only; minus only first;
+   one decimal point or one slash, never both; no zero or empty denominators. */
+const sprMax=v=>String(v).startsWith('-')?6:5;
+function sprClean(v){
+  let x=String(v??'').replace(/−/g,'-').replace(/[^0-9./\-]/g,'');
+  const neg=x.startsWith('-');x=x.replace(/-/g,'');
+  let d='',out='';
+  for(const c of x){if(c==='.'||c==='/'){if(d)continue;d=c}out+=c}
+  return ((neg?'-':'')+out).slice(0,neg?6:5);
+}
+function sprValid(v){
+  v=String(v??'');
+  if(v.length>sprMax(v))return false;
+  if(/^-?(?:\d+\.?\d*|\.\d+)$/.test(v))return true;
+  const f=v.match(/^-?(\d+)\/(\d+)$/);
+  return !!f&&+f[2]!==0;
+}
 function isCorrect(q,v){
   if(!has(v))return false;
   if(q.m==='MCQ')return String(v).trim().toUpperCase()===String(q.a).trim().toUpperCase();
-  if(normText(v)===normText(q.a))return true;
-  const opts=aliases(q.a),vn=normText(v);
-  if(opts.some(a=>normText(a)===vn))return true;
+  v=normText(v);
+  if(!sprValid(v))return false;
+  const opts=aliases(q.a);
+  if(opts.some(a=>normText(a)===v))return true;
   const n=numVal(v);if(n===null)return false;
-  return opts.some(a=>{const an=numVal(a);return an!==null&&Math.abs(n-an)<=Math.max(5e-5,Math.abs(an)*5e-5)});
+  const vals=opts.map(numVal).filter(x=>x!==null);
+  if(vals.some(a=>Math.abs(n-a)<1e-9))return true;
+  /* a decimal that cannot fit must fill the whole box, truncated or rounded at the last slot */
+  const m=v.match(/^-?\d*\.(\d+)$/);
+  if(m&&v.length===sprMax(v)){
+    const d=m[1].length,p=10**d;
+    const exact=opts.filter(a=>/\//.test(a)).map(numVal).filter(x=>x!==null);
+    return exact.some(a=>{const t=Math.trunc(a*p+(a<0?-1:1)*1e-9)/p,r=Math.sign(a)*Math.round(Math.abs(a)*p+1e-9)/p;return Math.abs(n-t)<1e-9||Math.abs(n-r)<1e-9});
+  }
+  return false;
 }
 const modCorrect=k=>(T.plan[k]||[]).reduce((n,id)=>n+(isCorrect(BYID[id],T.ans[id])?1:0),0);
 /* Scaled-score estimate: 3-parameter logistic item response theory, as the official Digital SAT is scored.
@@ -717,7 +744,7 @@ function drawExam(app){
   const last=T.idx===list.length-1;
   let right;
   if(q.m==='SPR'){
-    right=`<div class="spr"><label for="spr">Enter your answer</label><input id="spr" autocomplete="off" inputmode="text" maxlength="6" value="${esc(T.ans[id]||'')}"><div class="sprprev">Answer preview:<div class="box" id="sprprev"></div></div></div>`;
+    right=`<div class="spr"><label for="spr">Enter your answer</label><input id="spr" autocomplete="off" inputmode="text" maxlength="${sprMax(T.ans[id]||'')}" value="${esc(T.ans[id]||'')}"><div class="sprprev">Answer preview:<div class="box" id="sprprev"></div></div></div>`;
   }else{
     right=mcqHTML(q,id);
   }
@@ -736,7 +763,7 @@ function drawExam(app){
     const inp=$('#spr');
     const prev=()=>{$('#sprprev').innerHTML=fracHTML(inp.value)};
     inp.addEventListener('input',()=>{
-      inp.value=inp.value.replace(/[^0-9./\-−]/g,'').replace(/−/g,'-');
+      inp.value=sprClean(inp.value);inp.maxLength=sprMax(inp.value);
       T.ans[id]=inp.value;prev();save();
     });
     prev();
