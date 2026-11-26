@@ -129,6 +129,6 @@ Style, Charter, Noto Serif, Georgia ... whichever the device has; no font files 
 
 Question review: "Show correct answer and explanation"
 --------------------------------------------------------
-In the individual question review screen a checkbox (unchecked by default, and unchecked again on every question)
-controls the spoilers. Unchecked: only your own answer is marked (neutral) and the header says "Answered"/"Unanswered".
-Checked: the correct choice (or the accepted answer), Correct/Incorrect and the explanation appear.
+In the individual question review screen the result is always shown (Correct / Incorrect / Unanswered, your own
+choice in green or red). A checkbox (unchecked by default, and unchecked again on every question) reveals what you did
+not get: the correct choice / accepted answer of a question you missed, and the explanation.

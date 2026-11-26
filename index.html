@@ -776,14 +776,14 @@ function drawQReview(app){
   const rev=!!UI.view.rev;          // "Show correct answer and explanation" (off by default, off again on every question)
   let body;
   if(q.m==='SPR'){
-    body=`<div class="yours"><b>Your answer:</b> ${has(ans)?esc(ans):'<i>none</i>'}${rev?` &nbsp;·&nbsp; <b>Accepted:</b> ${esc(q.a)}`:''}</div>`;
+    body=`<div class="yours"><b>Your answer:</b> ${has(ans)?esc(ans):'<i>none</i>'}${rev||ok?` &nbsp;·&nbsp; <b>Accepted:</b> ${esc(q.a)}`:''}</div>`;
   }else{
     body=promptHTML(q)+`<div class="choices">${['A','B','C','D'].map((Lt,i)=>{
-      const good=rev&&q.a===Lt,mine=ans===Lt;
-      return choiceHTML(q,Lt,i,'static '+(good?'fb-good':mine?(rev?'fb-bad':'sel'):''),'tabindex="-1"',good?'<span class="tag" style="background:var(--good)">Correct</span>':mine?`<span class="tag" style="background:${rev?'var(--bad)':'var(--ink2)'}">Your answer</span>`:'');
+      const good=q.a===Lt&&(rev||ans===Lt),mine=ans===Lt;
+      return choiceHTML(q,Lt,i,'static '+(good?'fb-good':mine?'fb-bad':''),'tabindex="-1"',good?'<span class="tag" style="background:var(--good)">Correct</span>':mine?'<span class="tag" style="background:var(--bad)">Your answer</span>':'');
     }).join('')}</div>`;
   }
-  app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="rv"><div class="info"><span class="chip ${rev?(ok?'g':'b'):''}">${rev?(ok?'Correct':has(ans)?'Incorrect':'Unanswered'):(has(ans)?'Answered':'Unanswered')}</span>
+  app.innerHTML=`<div class="ribbon"></div><div class="center"><div class="rv"><div class="info"><span class="chip ${ok?'g':'b'}">${ok?'Correct':has(ans)?'Incorrect':'Unanswered'}</span>
   <b class="rvq">${MODS[it.k].s==='rw'?'R&amp;W':'Math'} ${MODS[it.k].num}.${it.i+1}</b><span>${esc(q.d)}${q.k?' · '+esc(q.k):''}</span><span class="chip">${{E:'Easy',M:'Medium',H:'Hard'}[q.l]}</span></div>
   <div class="qa">${stemHTML(q,false)}<div style="height:18px"></div>${body}</div>
   <label class="revtog"><input type="checkbox" data-a="qrreveal" ${rev?'checked':''}> Show correct answer and explanation</label>
