@@ -526,7 +526,8 @@ function isCorrect(q,v){
   if(vals.some(a=>Math.abs(n-a)<1e-9))return true;
   /* a decimal that cannot fit must fill the whole box, truncated or rounded at the last slot */
   const m=v.match(/^-?\d*\.(\d+)$/);
-  if(m&&v.length===sprMax(v)){
+  /* College Board: truncate or round at the fourth digit - exactly four digits (a lone leading 0 before the point is not counted) */
+  if(m&&v.replace(/[-.]/g,'').replace(/^0(?=\d)/,v.replace(/^-/,'').startsWith('0.')?'':'$&').length===4){
     const d=m[1].length,p=10**d;
     const exact=opts.filter(a=>/\//.test(a)).map(numVal).filter(x=>x!==null);
     return exact.some(a=>{const t=Math.trunc(a*p+(a<0?-1:1)*1e-9)/p,r=Math.sign(a)*Math.round(Math.abs(a)*p+1e-9)/p;return Math.abs(n-t)<1e-9||Math.abs(n-r)<1e-9});
